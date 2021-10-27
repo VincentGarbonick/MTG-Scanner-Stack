@@ -1,7 +1,5 @@
 ## Frontend mockup
 
-This is a basic mockup for the front and backend of the database and companion application for the MTG card app. 
-It is incredibly basic, and has very little functionality. 
+For family guy testing with w3 schools example 
 
-#### THIS IS CURRENTLY USING WAMP 
-#### THE FINAL DESIGN WILL BE USING XAMPP 
+https://www.w3schools.com/php/php_ajax_database.asp
