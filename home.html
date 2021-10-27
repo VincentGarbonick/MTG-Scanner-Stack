@@ -1,0 +1,40 @@
+<html>
+<head> 
+    <title> Home </title>
+    <link rel="stylesheet" href="home.css" type="text/css">
+    <script>
+        function showUser(str) 
+        {
+            if (str=="") {
+              document.getElementById("txtHint").innerHTML="";
+              return;
+            }
+            var xmlhttp=new XMLHttpRequest();
+            xmlhttp.onreadystatechange=function() {
+              if (this.readyState==4 && this.status==200) {
+                document.getElementById("txtHint").innerHTML=this.responseText;
+              }
+            }
+            // xmlhttp.open("GET","getInfo.php?q="+str,true);
+            xmlhttp.open("GET","getInfo.php?q="+"name = \"Trained Caracal\"",true);
+            xmlhttp.send();
+        }
+    </script>
+</head>
+<body> 
+    <div class="title">
+        <p class="title-text">YOUR TITLE HERE</p>
+    </div>
+    <div class="">
+        <form>
+            <select name="users" onchange="showUser(this.value)">
+            <option value="">Select an option:</option>
+            <option value="1">Get list</option>
+            <option value="2">Render list</option>
+            <!--<option value="3">Joseph Swanson</option>
+            <option value="4">Glenn Quagmire</option> -->
+            </select>
+        </form>
+    </div>
+</body> 
+</html>
