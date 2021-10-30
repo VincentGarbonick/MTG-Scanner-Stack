@@ -1,6 +1,11 @@
-import requests, json, urllib.request, os
-from PIL import Image
+import PIL.ImageFilter
+import requests, json, urllib.request, os, time
+from PIL import Image, ImageOps
 
+import cv2
+import pytesseract
+
+pytesseract.pytesseract.tesseract_cmd = "tesseract"
 
 # Used to get the JSON file of all Scryfall English card objects
 # Note: This JSON file is very large and can take some time to download.
@@ -65,5 +70,39 @@ def getSampleCards():
                     print(f"{name} Rotated already exists")
 
 
+
+def textRecognitionDemo():
+
+    # Get demo images
+    images = []
+    for (paths, names, files) in os.walk("DemoCards"):
+        print(files)
+        for i in files:
+            images.append(Image.open(f"DemoCards/{i}"))
+        break
+
+    for i in images:
+
+        # We need to do some pre image processing to clean them up a bit
+        width, height = i.size
+
+        topCrop = height / 8
+
+        topCropImage = i.crop((30, 30, width - 30, topCrop))
+
+        topCropImage = topCropImage.convert('1') # Convert to black and white
+        topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out all that grainy shit
+
+        topCropImage.save(f"{time.time()}.jpeg") # Just for viewing / testing
+
+        print(pytesseract.image_to_string(topCropImage))
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
-    getSampleCards()
+    textRecognitionDemo()
