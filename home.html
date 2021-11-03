@@ -1,35 +1,26 @@
 <html>
 <head>
-<script>
-function showUser(str) {
-  if (str == "") {
-    document.getElementById("txtHint").innerHTML = "";
-    return;
-  } else {
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
-        document.getElementById("txtHint").innerHTML = this.responseText;
-      }
-    };
-    xmlhttp.open("GET","getuser.php?q="+str,true);
-    xmlhttp.send();
-  }
-}
-</script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="home.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" type="image/jpg" href="origin-symbol.png"/>
+  <title> Home </title>
 </head>
 <body>
-
-<form>
-<select name="users" onchange="showUser(this.value)">
-  <option value="">Select a person:</option>
-  <option value="1">Peter Griffin</option>
-  <option value="2">Jaret Varn</option>
-  <option value="3">Ligma Sugma</option>
-  </select>
-</form>
-<br>
-<div id="txtHint"><b>Person info will be listed here...</b></div>
-
+  <div class="container-fluid header-box">
+    <h1 class="text-center header-text"> Welcome to the database</h1> 
+    <h1 class="text-center header-secondary-text"> How would you like to view your cards?</h1> 
+  </div>
+  <div class="container-fluid text-center">
+    <button class="btn-hover color-1">List View</button>
+    <button class="btn-hover color-2">Visual Spoiler</button>
+  </div>
+  <div class="footer footer-box text-center">
+    <img class="center" src="origin-symbol.png" style="height: 150px; width:auto;">
+    <p class="footer-text">Brought to you by DT17</p>
+  </div>
 </body>
+
 </html>
