@@ -17,19 +17,62 @@
     </div>
 
     
-    <div class="sidebar-right">
-        <p> cum </p>
-        <p> cum </p>
-        <p> cum </p>
-        <p> cum </p>
-        <p> cum </p>
+    <div class="sidebar-right text-center">
+        <img src="flickerwisp.jpg" class="center" style="padding-top: 10px;">
     </div>
     
-    <div class="" style="font-size: 200px; background-color: green;">
-        fart 
-        fart 
-        fart 
-        fart 
+    <!-- <div class="text-center" style="font-size: 200px; font-family: 'Raleway', sans-serif; background-color: white;"> -->
+    <div class="text-center" style="font-family: 'Raleway', sans-serif;">
+        <div class="table-wrapper-scroll-y my-custom-scrollbar">
+            <table class="table table-responsive table-bordered table-striped mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">First</th>
+                  <th scope="col">Last</th>
+                  <th scope="col">Handle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td>Larry</td>
+                  <td>the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+                <tr>
+                  <th scope="row">4</th>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <th scope="row">5</th>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr>
+                <tr>
+                  <th scope="row">6</th>
+                  <td>Larry</td>
+                  <td>the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>   
     </div>
 
 </body>
