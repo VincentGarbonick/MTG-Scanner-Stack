@@ -1,17 +1,17 @@
 CREATE DATABASE magic;
 USE magic;
 
-DROP TABLE IF EXISTS mtgNames;
+DROP TABLE IF EXISTS mtgCards;
 
-CREATE TABLE mtgNames 
+CREATE TABLE mtgCards
 (
     cardName VARCHAR(30) UNIQUE NOT NULL,
-    qty INT UNIQUE NOT NULL,
+    qty INT NOT NULL,
     price FLOAT,
     PRIMARY KEY (cardName)
-)
+);
 
-insert into mtgNames values
+insert into mtgCards values
 ("Trained Caracal", 3, 0.30),
 ("Liliana Vess", 2, 15),
 ("Thragtusk", 10, 1.00),
@@ -48,5 +48,19 @@ insert into mtgNames values
 ("Dummy31", 1, 1),
 ("Dummy32", 1, 1),
 ("Dummy33", 1, 1),
-("Dummy34", 1, 1);
-
+("Dummy34", 1, 1),
+("Dummy35", 1, 1),
+("Dummy36", 1, 1),
+("Dummy37", 1, 1),
+("Dummy38", 1, 1),
+("Dummy39", 1, 1),
+("Dummy40", 1, 1),
+("Dummy41", 1, 1),
+("Dummy42", 1, 1),
+("Dummy43", 1, 1),
+("Dummy44", 1, 1),
+("Dummy45", 1, 1),
+("Dummy46", 1, 1),
+("Dummy47", 1, 1),
+("Dummy48", 1, 1),
+("Dummy49", 1, 1);

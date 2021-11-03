@@ -15,61 +15,51 @@
         </a>
         <button class="btn-hover color-2 center">Visual Spoiler</button>
     </div>
-
-    
     <div class="sidebar-right text-center">
         <img src="flickerwisp.jpg" class="center" style="padding-top: 10px;">
-    </div>
-    
-    <!-- <div class="text-center" style="font-size: 200px; font-family: 'Raleway', sans-serif; background-color: white;"> -->
+    </div>    
     <div class="text-center" style="font-family: 'Raleway', sans-serif;">
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
-            <table class="table table-responsive table-bordered table-striped mb-0">
+            <table class="table table-responsive table-bordered table-striped mb-0" style="font-family: 'Raleway', sans-serif">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">First</th>
-                  <th scope="col">Last</th>
-                  <th scope="col">Handle</th>
+                  <th scope="col">Card Name</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Price</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                </tr>
-                <tr>
-                  <th scope="row">2</th>
-                  <td>Jacob</td>
-                  <td>Thornton</td>
-                  <td>@fat</td>
-                </tr>
-                <tr>
-                  <th scope="row">3</th>
-                  <td>Larry</td>
-                  <td>the Bird</td>
-                  <td>@twitter</td>
-                </tr>
-                <tr>
-                  <th scope="row">4</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                </tr>
-                <tr>
-                  <th scope="row">5</th>
-                  <td>Jacob</td>
-                  <td>Thornton</td>
-                  <td>@fat</td>
-                </tr>
-                <tr>
-                  <th scope="row">6</th>
-                  <td>Larry</td>
-                  <td>the Bird</td>
-                  <td>@twitter</td>
-                </tr>
+                <?php
+                    
+                    $hostname = "localhost";
+                    $username = "root";
+                    $pass = "";
+                    $dbName = "magic";
+                    $tableName = "mtgcards";
+
+                    $conn = mysqli_connect($hostname, $username, $pass, $dbName);
+
+                    $query = "SELECT * FROM $tableName";
+
+                    $result = mysqli_query($conn,$query);
+                    
+                    $row = mysqli_fetch_array($result);
+                    
+                    $num_rows = mysqli_num_rows($result);
+                    $num_fields = mysqli_num_fields($result);
+
+                    for ($row_num = 0; $row_num < $num_rows; $row_num++) {
+                        print "<tr align = 'center'>";
+                        $values = array_values($row);
+                        for ($index = 0; $index < $num_fields; $index++){
+                            $value = htmlspecialchars($values[2 * $index + 1]);
+                            print "<th>" . $value . "</th> ";
+                        }
+                        print "</tr>";
+                        $row = mysqli_fetch_array($result);
+                    }
+                    
+                ?>
               </tbody>
             </table>
         </div>   
