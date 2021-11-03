@@ -20,6 +20,7 @@
     </div>    
     <div class="text-center" style="font-family: 'Raleway', sans-serif;">
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
+            <!-- TODO: GET FILTER/SEARCH TABLE STUFF, USING EITHER BOOTSTRAP OR SOMETHING ELSE -->
             <table class="table table-responsive table-bordered table-striped mb-0" style="font-family: 'Raleway', sans-serif">
               <thead>
                 <tr>
@@ -30,7 +31,6 @@
               </thead>
               <tbody>
                 <?php
-                    
                     $hostname = "localhost";
                     $username = "root";
                     $pass = "";
@@ -57,8 +57,7 @@
                         }
                         print "</tr>";
                         $row = mysqli_fetch_array($result);
-                    }
-                    
+                    } 
                 ?>
               </tbody>
             </table>
