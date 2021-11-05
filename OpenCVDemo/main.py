@@ -27,11 +27,19 @@ def getDefaultCardsJson():
         print(f"Error in request: {r.status_code} - {r.reason}")
 
 
+def getCardDetails(name):
+    r = requests.get(f"https://api.scryfall.com/cards/named?fuzzy={name.replace(' ', '+')}")
+    if r.status_code == 200:
+        requestData = r.text
+        requestJSON = json.loads(requestData)
+        return requestJSON
+    else:
+        return r.status_code
+
 def getSampleCards():
     #IDs of cards to download
     IDs = [
         "0000579f-7b35-4ed3-b44c-db2a538066fe", # Fury Sliver
-        "0000a54c-a511-4925-92dc-01b937f9afad", # Spirit
         "0000cd57-91fe-411f-b798-646e965eec37", # Siren Lookout
         "0001f1ef-b957-4a55-b47f-14839cdbab6f", # Venerable Knight
         "00020b05-ecb9-4603-8cc1-8cfa7a14befc"  # Wildcall
@@ -75,6 +83,7 @@ def textRecognitionDemo():
 
     # Get demo images
     images = []
+    recognized = []
     for (paths, names, files) in os.walk("DemoCards"):
         print(files)
         for i in files:
@@ -85,24 +94,24 @@ def textRecognitionDemo():
 
         # We need to do some pre image processing to clean them up a bit
         width, height = i.size
+        topCrop = height / 10
 
-        topCrop = height / 8
-
-        topCropImage = i.crop((30, 30, width - 30, topCrop))
-
+        topCropImage = i.crop((40, 34, width - 120, topCrop))
         topCropImage = topCropImage.convert('1') # Convert to black and white
         topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out all that grainy shit
 
-        topCropImage.save(f"{time.time()}.jpeg") # Just for viewing / testing
+        #topCropImage.save(f"{time.time()}.jpeg") # Just for viewing / testing
 
-        print(pytesseract.image_to_string(topCropImage))
+        recognized.append(pytesseract.image_to_string(topCropImage).split('\n')[0])
 
-
-
-
-
+    return recognized
 
 
 
 if __name__ == "__main__":
-    textRecognitionDemo()
+    card_titles = textRecognitionDemo()
+    for i in card_titles:
+        try:
+            print(getCardDetails(i)['name'])
+        except KeyError:
+            pass
