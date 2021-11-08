@@ -14,6 +14,7 @@
             <img class="sidebar-image" src="origin-symbol.png">
         </a>
         <button class="btn-hover color-2 center">Visual Spoiler</button>
+        <button class="btn-hover color-3 center">Refresh Prices</button>
     </div>
     <div class="sidebar-right text-center">
         <img src="flickerwisp.jpg" class="center" style="padding-top: 10px;">

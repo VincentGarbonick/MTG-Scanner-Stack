@@ -50,10 +50,18 @@
     box-shadow: 0 4px 15px 0 rgba(49, 196, 190, 0.75);
 }
 
+
 .btn-hover.color-2 
 {
     background-image: linear-gradient(to right, #f5ce62, #e43603, #fa7199, #e85a19);
     box-shadow: 0 4px 15px 0 rgba(229, 66, 10, 0.75);
+}
+
+
+.btn-hover.color-3
+{
+    background-image: linear-gradient(to right, #6253e1, #852D91, #A3A1FF, #F24645);
+    box-shadow: 0 4px 15px 0 rgba(126, 52, 161, 0.75);
 }
 
 .footer
