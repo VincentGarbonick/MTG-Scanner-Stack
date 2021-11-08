@@ -3,6 +3,21 @@
     box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
 }
 
+.developer-form-box
+{
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    width: fit-content;
+    block-size: fit-content;
+    font-family: 'Raleway', sans-serif;
+}
+
+.developer-text
+{
+    font-family: 'Raleway', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+}
+
 * 
 {
     -webkit-box-sizing: border-box;
@@ -62,6 +77,12 @@
 {
     background-image: linear-gradient(to right, #6253e1, #852D91, #A3A1FF, #F24645);
     box-shadow: 0 4px 15px 0 rgba(126, 52, 161, 0.75);
+}
+
+.btn-hover.color-4
+{
+    background-image: linear-gradient(to right, #eb3941, #f15e64, #e14e53, #e2373f);  
+    box-shadow: 0 5px 15px rgba(242, 97, 103, .4);
 }
 
 .footer
@@ -182,3 +203,5 @@
 {
     display: block;
 }
+
+
