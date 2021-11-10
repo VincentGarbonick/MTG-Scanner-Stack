@@ -4,35 +4,30 @@
     $message = "test";
 
 
-    // Useage: Downloads the bulk JSON file from the gatherer
+    // Useage: Downloads the bulk JSON art file from scryfall 
     // Precondition: None
-    // Postcondition: File with json information
-    function downloadBulk()
-    {
-
-    };
-
-
-
+    // Postcondition: File with json information on each card artwork 
     if(isset($_POST["update-info-button"]))
     {
-        $jsonRequest = "https://api.scryfall.com/bulk-data";
-        /*
-        $ch = curl_init("https://api.scryfall.com/bulk-data"); 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        $data = curl_exec($ch);
-        echo $data;
-        print($data);
-        curl_close($ch);
-        */
+        // bulk list of cards 
+        // https://c2.scryfall.com/file/scryfall-bulk/default-cards/default-cards-20211110100240.json
 
+        // unique artwork
+        // https://c2.scryfall.com/file/scryfall-bulk/unique-artwork/unique-artwork-20211110101336.json
+
+        // set a high memory limit since this is a huge file 
+        ini_set('memory_limit','500M');
+
+        $url = "https://c2.scryfall.com/file/scryfall-bulk/unique-artwork/unique-artwork-20211110101336.json";
         
-        $json = file_get_contents($jsonRequest,0,null,null);  
-        $json_output = json_encode($json, TRUE); 
-        header('Content-Type: application/json');
-        echo $json_output;
-
+        if(file_put_contents("art-and-names.json", file_get_contents($url))) 
+        {
+           header("Location: developer.html"); 
+        }
+        else
+        {
+            echo("Bad download response, something is wrong.");
+        }
     }
     elseif(isset($_POST["process-image-button"]))
     {
