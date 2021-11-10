@@ -36,7 +36,10 @@
         ini_set('memory_limit','500M');
         
         // check if directory exists and make one if needed
-        $file = fopen($bulkJsonName, "r");
+        if(!file_exists("./img"))
+        {
+            mkdir("./img", 0777);
+        }
 
         /*
         This is what the json object for all the names and arts looks like 
@@ -52,9 +55,12 @@
         then decoding the file as json. we must remove the comma or else an error will be thrown
         */
 
+        $file = fopen($bulkJsonName, "r");
+
         if($file)
-        {
-            while(!feof($file))
+        {   
+            $i = 0;
+            while(!feof($file) && $i != 10)
             {
                 $line = fgets($file);
                 // we are getting rid of the comma at the end of each json line so the json is
@@ -62,14 +68,13 @@
                 // the comma is the second to last value in the string for some strange reason
                 $line = substr_replace($line,"",-2);
                 $line = json_decode($line, TRUE);
-
                 //TODO: GET FINAL CARD WORKING 
                 if($line)
                 {
                     $imgName = $line["name"];
                     $url = $line["image_uris"]["small"];
-                    // echo $url;
-                    // echo "<br>";
+                    //echo $url;
+                    //echo "<br>";                        
                     
                     // if we don't have an image URL, that means the card is double faced 
                     if(!$url)
@@ -77,10 +82,13 @@
                         // TOOD: GET DOUBLE FACED CARDS WORKING
                         // just set it to fury sliver for now 
                         $url = "https://c1.scryfall.com/file/scryfall-cards/small/front/0/0/0000579f-7b35-4ed3-b44c-db2a538066fe.jpg?1562894979";
-                        
+                        //echo "DOUBLE FACED CARD DETECTED";
+                        //echo "<br>";
+                        //echo $url;
+                        //echo "<br>";
                     }
-
-                
+                    file_put_contents("./img/" . $imgName . ".jpg" , file_get_contents($url));
+                    $i += 1;
                 }
             }
             fclose($file);
