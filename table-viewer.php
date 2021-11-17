@@ -20,10 +20,9 @@
       {
         rowInfo = $(this).find("th#cardNameRow").text();
         filePath = smallImgDir + rowInfo + ".jpg";
-        alert(filePath);
+        //alert(filePath);
 
-        
-
+        $("#sidebarImage").attr("src", filePath);
       });
     });
   </script>
@@ -40,7 +39,7 @@
         <button class="btn-hover color-3 center">Refresh Prices</button>
     </div>
     <div class="sidebar-right text-center">
-        <img src="flickerwisp.jpg" class="center" style="padding-top: 10px;">
+        <img src="./demo-img/demo-img-med/Flickerwisp.jpg" class="center sidebar-image-spec" style="padding-top: 10px;" id="sidebarImage">
     </div>    
     <div class="text-center" style="font-family: 'Raleway', sans-serif;">
         <div class="table-wrapper-scroll-y my-custom-scrollbar">

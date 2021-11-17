@@ -225,3 +225,9 @@ tr.highlight:hover
     color:#FFF;
     cursor: pointer;
 }
+
+.sidebar-image-spec
+{
+    width: 350px; 
+    height: auto;
+}
