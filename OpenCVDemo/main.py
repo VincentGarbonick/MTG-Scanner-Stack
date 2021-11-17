@@ -46,6 +46,8 @@ def getSampleCards():
         "0001f1ef-b957-4a55-b47f-14839cdbab6f", # Venerable Knight
         "00020b05-ecb9-4603-8cc1-8cfa7a14befc"  # Wildcall
     ]
+    if not os.path.isdir("DemoCards"):
+        os.mkdir("DemoCards")
     with open("ExampleCardObjects.json", mode="r") as file:
         demoJSON = json.loads(file.read())
         for entries in demoJSON:
@@ -136,7 +138,7 @@ if __name__ == "__main__":
                 print()
                 print(APILookup[1]['name'])
                 print(APILookup[1]['prices'])
-                print(APILookup[1])
+                print(json.dumps(APILookup[1], indent=1))
                 print()
             else:
                 print(f"No API search result for {i}")
