@@ -13,7 +13,9 @@
         <a href="home.html">
             <img class="sidebar-image" src="origin-symbol.png">
         </a>
-        <button class="btn-hover color-2 center">Visual Spoiler</button>
+        <form action="visual-spoiler.php">
+          <button class="btn-hover color-2 center">Visual Spoiler</button>
+        </form>
         <button class="btn-hover color-3 center">Refresh Prices</button>
     </div>
     <div class="sidebar-right text-center">
