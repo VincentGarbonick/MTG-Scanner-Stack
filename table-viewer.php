@@ -9,7 +9,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function()
+    {
+      var smallImgDir = "./demo-img/demo-img-med/";
+      var rowInfo = "";
+      var filePath = "";
+      $("tr").click(function()
+      {
+        rowInfo = $(this).find("th#cardNameRow").text();
+        filePath = smallImgDir + rowInfo + ".jpg";
+        alert(filePath);
 
+        
+
+      });
+    });
+  </script>
   <title>Table Viewer</title>
 </head>
 <body>
@@ -56,11 +73,19 @@
                     $num_fields = mysqli_num_fields($result);
 
                     for ($row_num = 0; $row_num < $num_rows; $row_num++) {
-                        print "<tr align = 'center'>";
+                        print "<tr align = 'center' class=\"highlight\">";
                         $values = array_values($row);
                         for ($index = 0; $index < $num_fields; $index++){
                             $value = htmlspecialchars($values[2 * $index + 1]);
-                            print "<th>" . $value . "</th> ";
+                            if($index != 0)
+                            {
+                              print "<th>" . $value . "</th> ";
+                            }
+                            else 
+                            {
+                              // first index will be name...tag with cardNameRow so we can grab with jQuery
+                              print "<th id=\"cardNameRow\">" . $value . "</th> ";
+                            }
                         }
                         print "</tr>";
                         $row = mysqli_fetch_array($result);
@@ -71,6 +96,5 @@
             </table>
         </div>   
     </div>
-                  
 </body>
 </html>
