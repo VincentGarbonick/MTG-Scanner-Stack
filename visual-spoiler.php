@@ -34,6 +34,7 @@
         
         // loop through all names 
         $smallImgDir = "./demo-img/demo-img-small/";
+        // $smallImgDir = "./img/"; // for the "shipped mode" of the project
         $imgDir = scandir($smallImgDir);
         $i = 0;
         while($name = mysqli_fetch_array($result))

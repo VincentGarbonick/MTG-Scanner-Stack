@@ -27,9 +27,9 @@
             <table class="table table-responsive table-bordered table-striped mb-0" style="font-family: 'Raleway', sans-serif">
               <thead>
                 <tr>
-                  <th scope="col">Card Name</th>
-                  <th scope="col">Quantity</th>
-                  <th scope="col">Price</th>
+                  <th class="table-header-text" scope="col">Card Name</th>
+                  <th class="table-header-text" scope="col">Quantity</th>
+                  <th class="table-header-text" scope="col">Price</th>
                 </tr>
               </thead>
               <tbody>
