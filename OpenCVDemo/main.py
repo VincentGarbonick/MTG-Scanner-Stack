@@ -29,12 +29,15 @@ def getDefaultCardsJson():
 
 def getCardDetails(name):
     r = requests.get(f"https://api.scryfall.com/cards/named?fuzzy={name.replace(' ', '+')}")
+    time.sleep(0.05)
     if r.status_code == 200:
         requestData = r.text
         requestJSON = json.loads(requestData)
-        return requestJSON
+        if requestJSON["name"] != name:
+            print(f"WARNING: API card name {requestJSON['name']} does not match {name}.")
+        return (r.status_code, requestJSON)
     else:
-        return r.status_code
+        return (r.status_code, None)
 
 def getSampleCards():
     #IDs of cards to download
@@ -98,9 +101,14 @@ def textRecognitionDemo():
 
         topCropImage = i.crop((40, 34, width - 120, topCrop))
         topCropImage = topCropImage.convert('1') # Convert to black and white
-        topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out all that grainy shit
+        topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out grainyness
 
-        #topCropImage.save(f"{time.time()}.jpeg") # Just for viewing / testing
+        savePath = i.filename.replace("DemoCards/", "DemoCards/Temp/")
+        savePath = savePath.replace(".jpeg", "-processed.jpeg")
+        if not os.path.isdir("DemoCards/Temp"):
+            os.mkdir("DemoCards/Temp")
+
+        topCropImage.save(savePath)
 
         recognized.append(pytesseract.image_to_string(topCropImage).split('\n')[0])
 
@@ -109,9 +117,14 @@ def textRecognitionDemo():
 
 
 if __name__ == "__main__":
+    getSampleCards()
     card_titles = textRecognitionDemo()
     for i in card_titles:
         try:
-            print(getCardDetails(i)['name'])
+            APILookup = getCardDetails(i)
+            if APILookup[0] == 200:
+                print(APILookup[1]['name'])
+                print(APILookup[1]['prices'])
+                print(APILookup[1])
         except KeyError:
             pass
