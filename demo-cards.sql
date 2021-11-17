@@ -22,4 +22,4 @@ insert into mtgCards values
 ("Squadron Hawk", 10, 1.00),
 ("Abrupt Decay", 5, 31.00),
 ("Kitchen Finks", 2, 10.00),
-("Seige Rhino", 5, 2.00);
+("Siege Rhino", 5, 2.00);
