@@ -2,7 +2,6 @@ import PIL.ImageFilter
 import requests, json, urllib.request, os, time
 from PIL import Image, ImageOps
 
-import cv2
 import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = "tesseract"
@@ -88,7 +87,7 @@ def textRecognitionDemo():
     images = []
     recognized = []
     for (paths, names, files) in os.walk("DemoCards"):
-        print(files)
+        print("Input image files:\n", files)
         for i in files:
             images.append(Image.open(f"DemoCards/{i}"))
         break
@@ -97,34 +96,49 @@ def textRecognitionDemo():
 
         # We need to do some pre image processing to clean them up a bit
         width, height = i.size
-        topCrop = height / 10
+        verticalCrop = height / 10
 
-        topCropImage = i.crop((40, 34, width - 120, topCrop))
+        topCropImage = i.crop((42, 34, width - 120, verticalCrop))
         topCropImage = topCropImage.convert('1') # Convert to black and white
         topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out grainyness
 
-        savePath = i.filename.replace("DemoCards/", "DemoCards/Temp/")
-        savePath = savePath.replace(".jpeg", "-processed.jpeg")
+        bottomCropImage = i.crop((124, height - verticalCrop + 2, width - 36, height - 36))
+        bottomCropImage = bottomCropImage.convert('1')
+        bottomCropImage = bottomCropImage.filter(PIL.ImageFilter.MedianFilter())
+        bottomCropImage = bottomCropImage.rotate(180)
+
+        savePathTop = i.filename.replace("DemoCards/", "DemoCards/Temp/")
+        savePathTop = savePathTop.replace(".jpeg", "-processed.jpeg")
+        savePathBottom = i.filename.replace("DemoCards/", "DemoCards/Temp/")
+        savePathBottom = savePathBottom.replace(".jpeg", "-bottom-processed.jpeg")
         if not os.path.isdir("DemoCards/Temp"):
             os.mkdir("DemoCards/Temp")
 
-        topCropImage.save(savePath)
+        topCropImage.save(savePathTop)
+        bottomCropImage.save(savePathBottom)
 
         recognized.append(pytesseract.image_to_string(topCropImage).split('\n')[0])
+        recognized.append(pytesseract.image_to_string(bottomCropImage).split('\n')[0])
+    print(f"Recognized text from images:\n{recognized}\n")
+
 
     return recognized
 
 
 
 if __name__ == "__main__":
-    getSampleCards()
+    #getSampleCards()
     card_titles = textRecognitionDemo()
     for i in card_titles:
         try:
             APILookup = getCardDetails(i)
             if APILookup[0] == 200:
+                print()
                 print(APILookup[1]['name'])
                 print(APILookup[1]['prices'])
                 print(APILookup[1])
+                print()
+            else:
+                print(f"No API search result for {i}")
         except KeyError:
             pass
