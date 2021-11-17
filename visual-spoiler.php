@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200&display=swap" rel="stylesheet">
   <link rel="shortcut icon" type="image/jpg" href="origin-symbol.png"/>
-  <title>Viewer</title>
+  <title>Visual Spoiler</title>
 </head>
 <body>
     <div class="sidebar-left">
@@ -16,7 +16,6 @@
         <form action="table-viewer.php">
             <button class="btn-hover color-1 center">List View</button>
         </form>
-        <button class="btn-hover color-3 center">Refresh Prices</button>
     </div>
     <div class="container-fluid">
         <?php

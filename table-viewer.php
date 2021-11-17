@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200&display=swap" rel="stylesheet">
   <link rel="shortcut icon" type="image/jpg" href="origin-symbol.png"/>
-  <title>Viewer</title>
+  <title>Table Viewer</title>
 </head>
 <body>
     <div class="sidebar-left">
@@ -61,11 +61,12 @@
                         print "</tr>";
                         $row = mysqli_fetch_array($result);
                     } 
+                  // TODO: some kind of export to text function
                 ?>
               </tbody>
             </table>
         </div>   
     </div>
-
+                  
 </body>
 </html>
