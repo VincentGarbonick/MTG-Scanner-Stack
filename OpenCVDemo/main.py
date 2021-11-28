@@ -1,6 +1,7 @@
 import PIL.ImageFilter
 import requests, json, urllib.request, os, time
 from PIL import Image, ImageOps
+import difflib
 
 import pytesseract
 
@@ -34,9 +35,13 @@ def getCardDetails(name):
         requestJSON = json.loads(requestData)
         if requestJSON["name"] != name:
             print(f"WARNING: API card name {requestJSON['name']} does not match {name}.")
+            matchRatio = difflib.SequenceMatcher(None, name, requestJSON["name"]).ratio()
+            if matchRatio > 0.25:
+                print(f"ERROR: Resulting name ratio difference is too high: {matchRatio}")
+                return (matchRatio, "Bad match ratio")
         return (r.status_code, requestJSON)
     else:
-        return (r.status_code, None)
+        return (r.status_code, "Bad status code")
 
 def getSampleCards():
     #IDs of cards to download
