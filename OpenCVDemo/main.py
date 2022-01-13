@@ -1,8 +1,8 @@
 import PIL.ImageFilter
 import requests, json, urllib.request, os, time
 from PIL import Image, ImageOps
+import difflib
 
-import cv2
 import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = "tesseract"
@@ -29,12 +29,19 @@ def getDefaultCardsJson():
 
 def getCardDetails(name):
     r = requests.get(f"https://api.scryfall.com/cards/named?fuzzy={name.replace(' ', '+')}")
+    time.sleep(0.05)
     if r.status_code == 200:
         requestData = r.text
         requestJSON = json.loads(requestData)
-        return requestJSON
+        if requestJSON["name"] != name:
+            print(f"WARNING: API card name {requestJSON['name']} does not match {name}.")
+            matchRatio = difflib.SequenceMatcher(None, name, requestJSON["name"]).ratio()
+            if matchRatio > 0.25:
+                print(f"ERROR: Resulting name ratio difference is too high: {matchRatio}")
+                return (matchRatio, "Bad match ratio")
+        return (r.status_code, requestJSON)
     else:
-        return r.status_code
+        return (r.status_code, "Bad status code")
 
 def getSampleCards():
     #IDs of cards to download
@@ -44,6 +51,8 @@ def getSampleCards():
         "0001f1ef-b957-4a55-b47f-14839cdbab6f", # Venerable Knight
         "00020b05-ecb9-4603-8cc1-8cfa7a14befc"  # Wildcall
     ]
+    if not os.path.isdir("DemoCards"):
+        os.mkdir("DemoCards")
     with open("ExampleCardObjects.json", mode="r") as file:
         demoJSON = json.loads(file.read())
         for entries in demoJSON:
@@ -85,7 +94,7 @@ def textRecognitionDemo():
     images = []
     recognized = []
     for (paths, names, files) in os.walk("DemoCards"):
-        print(files)
+        print("Input image files:\n", files)
         for i in files:
             images.append(Image.open(f"DemoCards/{i}"))
         break
@@ -94,24 +103,49 @@ def textRecognitionDemo():
 
         # We need to do some pre image processing to clean them up a bit
         width, height = i.size
-        topCrop = height / 10
+        verticalCrop = height / 10
 
-        topCropImage = i.crop((40, 34, width - 120, topCrop))
+        topCropImage = i.crop((42, 34, width - 120, verticalCrop))
         topCropImage = topCropImage.convert('1') # Convert to black and white
-        topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out all that grainy shit
+        topCropImage = topCropImage.filter(PIL.ImageFilter.MedianFilter()) # Filter out grainyness
 
-        #topCropImage.save(f"{time.time()}.jpeg") # Just for viewing / testing
+        bottomCropImage = i.crop((124, height - verticalCrop + 2, width - 36, height - 36))
+        bottomCropImage = bottomCropImage.convert('1')
+        bottomCropImage = bottomCropImage.filter(PIL.ImageFilter.MedianFilter())
+        bottomCropImage = bottomCropImage.rotate(180)
+
+        savePathTop = i.filename.replace("DemoCards/", "DemoCards/Temp/")
+        savePathTop = savePathTop.replace(".jpeg", "-processed.jpeg")
+        savePathBottom = i.filename.replace("DemoCards/", "DemoCards/Temp/")
+        savePathBottom = savePathBottom.replace(".jpeg", "-bottom-processed.jpeg")
+        if not os.path.isdir("DemoCards/Temp"):
+            os.mkdir("DemoCards/Temp")
+
+        topCropImage.save(savePathTop)
+        bottomCropImage.save(savePathBottom)
 
         recognized.append(pytesseract.image_to_string(topCropImage).split('\n')[0])
+        recognized.append(pytesseract.image_to_string(bottomCropImage).split('\n')[0])
+    print(f"Recognized text from images:\n{recognized}\n")
+
 
     return recognized
 
 
 
 if __name__ == "__main__":
+    #getSampleCards()
     card_titles = textRecognitionDemo()
     for i in card_titles:
         try:
-            print(getCardDetails(i)['name'])
+            APILookup = getCardDetails(i)
+            if APILookup[0] == 200:
+                print()
+                print(APILookup[1]['name'])
+                print(APILookup[1]['prices'])
+                print(json.dumps(APILookup[1], indent=1))
+                print()
+            else:
+                print(f"No API search result for {i}")
         except KeyError:
             pass
