@@ -1,5 +1,4 @@
-import pytesseract
-from PIL import Image
+
 from helpers import *
 
 """
@@ -15,6 +14,7 @@ def initialize():
     """
     Initializes all necessary data. This includes updating the default cards JSON file from the Scryfall API
     and populating a JSON of all card names from the default cards object.
+
     :return: None
     """
     updateDefaultCardsJSON()
@@ -23,5 +23,9 @@ def initialize():
 
 
 if __name__ == "__main__":
-    initialize()
-    print(getCloseMatches("Fur Sliver"))
+    #initialize()
+    #print(getCloseMatches("Word Brker"))
+    images = processImage(r"ImageTemp/Fury Sliver.jpeg")
+    text = textFromImage(images[0])
+    print(text)
+    print(getCloseMatches(text))

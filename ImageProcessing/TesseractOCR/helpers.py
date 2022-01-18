@@ -1,12 +1,60 @@
 import json, requests, urllib.request, difflib
 
+import PIL.ImageFilter
+import pytesseract
+from PIL import Image
+
+
+def processImage(imageFile):
+    """
+    Creates a copy of image and rotates it. Both images are then cropped, filtered, and returned as a tuple.
+    The first image in the tuple is the original image, the second is the rotated image.
+
+    :param imageFile: File of image to be processed
+    :return: Returns 2 images that have been processed and should be ready for character recognition
+    """
+    try:
+        image = Image.open(imageFile)
+    except Exception as e:
+        print(f"Could not open image file {imageFile} - {e}")
+        return 1
+
+    #crop = (left, top, right, bottom)
+    # These values will need to be adjusted to crop the title area depending on our camera
+    originalCrop = (39, 39, 390, 69)
+    rotatedCrop = (95, 611, 447, 642)
+
+    rotatedCopy = image.rotate(180)
+    image = image.crop(originalCrop)
+    image = image.convert('L')
+    image = image.filter(PIL.ImageFilter.MedianFilter())
+    rotatedCopy = rotatedCopy.crop(rotatedCrop)
+    rotatedCopy = rotatedCopy.convert('L')
+    rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
+
+    return image, rotatedCopy
+
+def textFromImage(image):
+    """
+    Uses tesseract to convert an image to string
+
+    :param image: Image file to convert to string
+    :return: text recovered from the image
+    """
+    text = pytesseract.image_to_string(image)
+    text = text.split('\n')[0]
+    return text
+
+
+
 
 
 def getCloseMatches(cardName, cutoff=0.6, num=1):
     """
     Gets the closest match(s) to cardName from the list of all names in cardNames.json
+
     :param cardName: The card name string to find a match of
-    :param cutoff: 0-1 float that defines "closeness"
+    :param cutoff: 0-1 float that defines the lowest "closeness" ratio acceptable
     :param num: Number of matches to return
     :return: Returns a tuple containing a (len(possibilities) list of matches, and ratio float of match closeness)
     """
@@ -18,7 +66,7 @@ def getCloseMatches(cardName, cutoff=0.6, num=1):
         return 1
     similarList = difflib.get_close_matches(cardName, n=num, possibilities=namesList, cutoff=cutoff)
     ratio = None
-    if num == 1:
+    if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
     return (similarList, ratio)
 
@@ -27,12 +75,13 @@ def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"
     """
     Reads in all card names from the supplied cardsJson file.
     Names are then written to the output file as a json file for referencing.
+
     :param cardsJson: Scryfall cards JSON file
     :param output: Output file name
     :return: 0 - success
     """
     names = []
-    print("Reading cards json")
+    print(f"Reading cards file {cardsJson}")
     try:
         with open(cardsJson, mode="r") as file:
             cardsJson = json.loads(file.read())
@@ -50,7 +99,7 @@ def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"
 
     try:
         with open(output, mode="w") as file:
-            print(f"Writing {len(names)} names to file")
+            print(f"Writing {len(names)} names to file {output}")
             file.write(json.dumps(names))
             print("Done")
             return 0
@@ -61,6 +110,7 @@ def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"
 def updateDefaultCardsJSON(output = "defaultCards.json", overwrite = False):
     """
     Updates the Scryfall Default Cards JSON file to the newest from the API.
+
     :param output: Output file name
     :param overwrite: Override to overwrite the defaultCards JSON even if updated_at matches
     :return: 0 - success
@@ -126,4 +176,4 @@ def updateDefaultCardsJSON(output = "defaultCards.json", overwrite = False):
 
 if __name__ == "__main__":
     updateDefaultCardsJSON()
-    generateCardNames("defaultCards.json")
+    generateCardNames()
