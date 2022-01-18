@@ -5,7 +5,9 @@ import difflib
 
 import pytesseract
 
-pytesseract.pytesseract.tesseract_cmd = "tesseract"
+# This directory was originally named OpenCVDemo since we thought we would be using OpenCV
+# However, since we really only need character recognition, Google's open source Tesseract OCR was used for the demo.
+pytesseract.pytesseract.tesseract_cmd = "tesseract.back"
 
 # Used to get the JSON file of all Scryfall English card objects
 # Note: This JSON file is very large and can take some time to download.
