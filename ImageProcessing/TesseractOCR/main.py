@@ -1,5 +1,6 @@
 import pytesseract
 from PIL import Image
+from helpers import *
 
 """
 This will be the main file for handling image processing on the Jetson Nano.
@@ -10,7 +11,16 @@ Processed images will be added to the database.
 
 """
 
+def initialize():
+    """
+    Initializes all necessary data. This includes updating the default cards JSON file from the Scryfall API
+    and populating a JSON of all card names from the default cards object.
+    :return: None
+    """
+    updateDefaultCardsJSON()
+    generateCardNames()
+
 
 
 if __name__ == "__main__":
-
+    initialize()
