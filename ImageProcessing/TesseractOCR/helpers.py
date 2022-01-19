@@ -1,8 +1,11 @@
-import json, requests, urllib.request, difflib
-
-import PIL.ImageFilter
+import difflib
+import json
+import requests
+import urllib.request
 import pytesseract
+import PIL.ImageFilter
 from PIL import Image
+import os
 
 
 def processImage(imageFile):
@@ -23,7 +26,10 @@ def processImage(imageFile):
     # These values will need to be adjusted to crop the title area depending on our camera
     originalCrop = (39, 39, 390, 69)
 
+    # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
+
+    # Crop the images, convert them to 8 bit black and white, and apply a median filter
     image = image.crop(originalCrop)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
@@ -56,6 +62,7 @@ def getCloseMatches(cardName, cutoff=0.6, num=1):
     :param cutoff: 0-1 float that defines the lowest "closeness" ratio acceptable
     :param num: Number of matches to return
     :return: Returns a tuple containing a (len(possibilities) list of matches, and ratio float of match closeness)
+             If ratio is 0, no matches were found.
     """
     try:
         with open("cardNames.json", mode="r") as file:
