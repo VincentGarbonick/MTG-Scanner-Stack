@@ -22,13 +22,12 @@ def processImage(imageFile):
     #crop = (left, top, right, bottom)
     # These values will need to be adjusted to crop the title area depending on our camera
     originalCrop = (39, 39, 390, 69)
-    rotatedCrop = (95, 611, 447, 642)
 
     rotatedCopy = image.rotate(180)
     image = image.crop(originalCrop)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
-    rotatedCopy = rotatedCopy.crop(rotatedCrop)
+    rotatedCopy = rotatedCopy.crop(originalCrop)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
 
@@ -65,7 +64,7 @@ def getCloseMatches(cardName, cutoff=0.6, num=1):
         print(f"Could not read cardNames.json - {e}")
         return 1
     similarList = difflib.get_close_matches(cardName, n=num, possibilities=namesList, cutoff=cutoff)
-    ratio = None
+    ratio = 0
     if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
     return (similarList, ratio)
