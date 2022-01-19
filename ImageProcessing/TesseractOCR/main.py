@@ -17,6 +17,8 @@ def initialize():
 
     :return: None
     """
+    if not os.path.isdir("ImageTemp"):
+        os.mkdir("ImageTemp")
     updateDefaultCardsJSON()
     generateCardNames()
 
