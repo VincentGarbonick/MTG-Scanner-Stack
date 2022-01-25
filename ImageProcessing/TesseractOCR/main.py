@@ -21,6 +21,7 @@ def initialize():
         os.mkdir("ImageTemp")
     updateDefaultCardsJSON()
     generateCardNames()
+    print("Initialization complete")
 
 
 
@@ -35,13 +36,13 @@ if __name__ == "__main__":
     while True:
         # Check if there are any files in ImageTemp/ directory
         if len(os.listdir("ImageTemp")) > 0:
-            for (paths, names, files) in os.walk("ImageTemp"):
-                modifiedTimes = {}
-                for i in files:
-                    modifiedTimes[i] = os.path.getmtime(fr"ImageTemp/{i}")
-                # Get the file with the oldest last modified time
-                oldestFile = max(modifiedTimes, key=modifiedTimes.get)
-                break
+            *_, (paths, names, files) = os.walk("ImageTemp")
+            modifiedTimes = {}
+            for i in files:
+                modifiedTimes[i] = os.path.getmtime(fr"ImageTemp/{i}")
+            # Get the file with the oldest last modified time
+            oldestFile = max(modifiedTimes, key=modifiedTimes.get)
+
             # Get cropped and filtered images from the oldest file
             images = processImage(fr"ImageTemp/{oldestFile}")
             # Perform text recognition on images
