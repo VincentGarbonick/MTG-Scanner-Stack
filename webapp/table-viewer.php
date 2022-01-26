@@ -58,7 +58,7 @@
                     $username = "root";
                     $pass = "";
                     $dbName = "magic";
-                    $tableName = "mtgcards";
+                    $tableName = "mtgCards";
 
                     $conn = mysqli_connect($hostname, $username, $pass, $dbName);
 
