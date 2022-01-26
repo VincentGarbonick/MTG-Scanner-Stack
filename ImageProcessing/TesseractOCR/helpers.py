@@ -4,9 +4,48 @@ import requests
 import urllib.request
 import pytesseract
 import PIL.ImageFilter
+import mysql.connector
 from PIL import Image
 import os
 
+sqlUser = "root"
+sqlPass = ""
+sqlDB = "magic"
+sqlSock = "/opt/lampp/var/mysql/mysql.sock"
+
+def connectDatabase():
+    """
+    Connects to the MySQL database
+
+    :return: mysql.connector.connection object
+    """
+    sqlConnection = mysql.connector.connect(
+        user=sqlUser,
+        passwd=sqlPass,
+        db=sqlDB,
+        unix_socket=sqlSock)
+    return sqlConnection
+
+def incrementValue(keyName, valueName = "qty"):
+    """
+    Increments a value in the database by + 1
+    :param keyName: The primary key to be updated, usually "cardName"
+    :param valueName: The value to be incremented, by default "qty"
+    :return: 0 - success
+    """
+    connection = connectDatabase()
+    cur = connection.cursor()
+    try:
+        cur.execute(f"INSERT INTO mtgCards VALUES ('{keyName}', 1, 0)")
+    except mysql.connector.errors.IntegrityError as e:
+        try:
+            cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+        except Exception as e:
+            print(e)
+            return 1
+    connection.commit()
+    connection.close()
+    return 0
 
 def processImage(imageFile):
     """

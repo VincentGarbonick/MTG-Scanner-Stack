@@ -26,12 +26,13 @@ def initialize():
 
 
 if __name__ == "__main__":
-    initialize()
     #print(getCloseMatches("Word Brer"))
     #images = processImage(r"ImageTemp/Fury Sliver Rotated.jpeg")
     #text = textFromImage(images[1])
     #print(text)
     #print(getCloseMatches(text))
+
+    initialize()
 
     while True:
         # Check if there are any files in ImageTemp/ directory
