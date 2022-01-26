@@ -64,6 +64,7 @@ if __name__ == "__main__":
                 text = texts[1][0][0]
 
             # 'text' variable now contains the closest matching card name from the picture.
+            incrementValue(text)
             print(f"Got card name match {text}")
             print(fr"Removing {oldestFile}")
             os.remove(fr"ImageTemp/{oldestFile}")

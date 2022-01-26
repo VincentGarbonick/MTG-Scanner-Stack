@@ -37,9 +37,11 @@ def incrementValue(keyName, valueName = "qty"):
     cur = connection.cursor()
     try:
         cur.execute(f"INSERT INTO mtgCards VALUES ('{keyName}', 1, 0)")
+        print(f"Added new entry ({keyName}, 1, 0)")
     except mysql.connector.errors.IntegrityError as e:
         try:
             cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+            print(f"Incremented entry {keyName}")
         except Exception as e:
             print(e)
             return 1
