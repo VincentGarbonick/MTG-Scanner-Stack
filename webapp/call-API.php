@@ -113,6 +113,31 @@
     }
     elseif(isset($_POST["price-button"]))
     {
+        // get the json information 
+        $jsonFileName = "art-and-names.json";
+        $file = file_get_contents($jsonFileName);
+
+        while(!$file)
+        {
+            // set a high memory limit since this is a huge file 
+            ini_set('memory_limit','500M');
+
+            $url = "https://c2.scryfall.com/file/scryfall-bulk/unique-artwork/unique-artwork-20211110101336.json";
+            
+            if(file_put_contents($jsonFileName, file_get_contents($url))) 
+            {
+               echo "Downloaded info for " . $jsonFileName . "<br>"; 
+            }
+            else
+            {
+                echo("Bad download response, something is wrong.");
+            }
+
+            $file = file_get_contents($jsonFileName);
+        }
+
+
+
         $hostname = "localhost";
         $username = "root";
         $pass = "";
@@ -141,4 +166,7 @@
     {
         echo "uh oh";
     }
+
+
+
 ?>
