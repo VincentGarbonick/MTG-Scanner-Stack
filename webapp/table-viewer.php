@@ -36,7 +36,9 @@
         <form action="visual-spoiler.php">
           <button class="btn-hover color-2 center">Visual Spoiler</button>
         </form>
-        <button class="btn-hover color-3 center">Refresh Prices</button>
+        <form action="call-API.php" method="post">
+          <button class="btn-hover color-3 center" id="price-button" name="price-button">Refresh Prices</button>
+        </form>
     </div>
     <div class="sidebar-right text-center">
         <img src="./demo-img/demo-img-med/Flickerwisp.jpg" class="center sidebar-image-spec" style="padding-top: 10px;" id="sidebarImage">

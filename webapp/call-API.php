@@ -113,7 +113,29 @@
     }
     elseif(isset($_POST["price-button"]))
     {
-        echo "price";
+        $hostname = "localhost";
+        $username = "root";
+        $pass = "";
+        $dbName = "magic";
+        $tableName = "mtgCards";
+
+        $conn = mysqli_connect($hostname, $username, $pass, $dbName);
+        $query = "SELECT * FROM $tableName";
+
+        $result = mysqli_query($conn,$query);
+        
+        $row = mysqli_fetch_array($result);
+        
+        $num_rows = mysqli_num_rows($result);
+        $num_fields = mysqli_num_fields($result);
+
+        // loop through each record of table 
+        for ($row_num = 0; $row_num < $num_rows; $row_num++) {
+            $values = array_values($row);
+            print $values[0];
+            echo "<br>";
+            $row = mysqli_fetch_array($result);
+        } 
     }
     else 
     {
