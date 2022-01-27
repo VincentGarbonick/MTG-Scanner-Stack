@@ -1,0 +1,4 @@
+Pillow~=7.0.0
+requests~=2.22.0
+pytesseract~=0.3.8
+mysql-connector~=2.2.9
