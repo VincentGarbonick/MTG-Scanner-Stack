@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 const int GPIO_PIN = 194; // pin 15
 const char SYS_PATH[] = "/sys/class/gpio/gpio194/value";
@@ -9,17 +10,19 @@ const char SYS_PATH[] = "/sys/class/gpio/gpio194/value";
 void initialize()
 {
     FILE* filePointer;
-    char* buffer = malloc(sizeof(char) * 3);
+    char* buffer = malloc(sizeof(char) * 4);
 
     filePointer = fopen("/sys/class/gpio/export", "wb");
-    buffer = "194";
+    strcpy(buffer, "194");
     fwrite(buffer, sizeof(char), sizeof(buffer), filePointer);
     fclose(filePointer);
 
     filePointer = fopen("/sys/class/gpio/gpio194/direction", "wb");
-    buffer = "out";
+    strcpy(buffer, "out");
     fwrite(buffer, sizeof(char), sizeof(buffer), filePointer);
     fclose(filePointer);
+
+    free(buffer);
 }
 
 
