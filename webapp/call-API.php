@@ -115,9 +115,10 @@
     {
         // get the json information 
         $jsonFileName = "art-and-names.json";
-        $file = file_get_contents($jsonFileName);
+        $jFile = file_get_contents($jsonFileName);
 
-        while(!$file)
+        // if we don't have a $jsonFileName, which is the place where all the card information resides, we make a new one
+        while(!$jFile)
         {
             // set a high memory limit since this is a huge file 
             ini_set('memory_limit','500M');
@@ -133,10 +134,9 @@
                 echo("Bad download response, something is wrong.");
             }
 
-            $file = file_get_contents($jsonFileName);
+            $jFile = file_get_contents($jsonFileName);
+            echo "hi";
         }
-
-
 
         $hostname = "localhost";
         $username = "root";
@@ -154,13 +154,80 @@
         $num_rows = mysqli_num_rows($result);
         $num_fields = mysqli_num_fields($result);
 
+        $currentName = "Fury Sliver";
+
+
+        ini_set('memory_limit','500M'); // set a lot of memory, because we will be scanning 
+                                        // a lot of data 
+        //echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"$currentName\""));
+
+        ini_set('max_execution_time', '0'); // it will time out otherwise 
+
+
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Abrupt%20Decay\""));
+        sleep(1);
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Flickerwisp\""));
+        sleep(1);
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Fury%20Sliver\""));
+        sleep(1);
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Liliana%20Vess\""));
+        sleep(1);
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Thragtusk\""));
+        sleep(1);
+        echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Abrupt%20Decay\""));
+        
+
+
+        
         // loop through each record of table 
         for ($row_num = 0; $row_num < $num_rows; $row_num++) {
+            //$values = array_values($row);
             $values = array_values($row);
-            print $values[0];
-            echo "<br>";
+
+            // current name that we are "on" right now 
+            $currentName = $values[0];
+            $searchString = "https://api.scryfall.com/cards/search?q=\"$currentName\"";
+
+            //$currentJson = json_encode(file_get_contents($searchString));
+            echo $searchString."<br>";
+
+            // DOESN'T WORK WITH EITHER OF THESE PLUS THE CURRENTJSON FOR SOME REASON
+            //usleep(60 * 1000); // sleep for 6ms, per the insturctions from scryfall
+            //sleep(1);
+            
+            //echo $currentJson."<br"."<br>";
+            // loop through each entry in base file 
+
+            /*
+            $file = fopen($jsonFileName, "r");
+
+            if($file)
+            {
+                while(!feof($file))
+                {
+                    $line = fgets($file);
+                    // we are getting rid of the comma at the end of each json line so the json is
+                    // not malformed, which can cause failed decodes
+                    // the comma is the second to last value in the string for some strange reason
+                    $line = substr_replace($line,"",-2);
+                    $line = json_decode($line, TRUE);
+
+                    if($line && $line["name"] == $currentName)
+                    {
+                        //echo "<br>".$line["name"]."==".$currentName."<br>";
+                        //echo "<br>"."<br>"."<br>".$line["oracle_text"];
+                        // TODO: INCREMENT PROGRESS BAR HERE 
+                        break;
+                    }
+                }
+                fclose($file);
+            }
+            // TODO: ADD PROGRESS BAR 
+            */
             $row = mysqli_fetch_array($result);
+
         } 
+        
     }
     else 
     {
