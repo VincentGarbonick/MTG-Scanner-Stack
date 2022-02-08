@@ -46,6 +46,8 @@ if __name__ == "__main__":
 
             # Get cropped and filtered images from the oldest file
             images = processImage(fr"ImageTemp/{oldestFile}")
+            if images == 1:
+                continue
             # Perform text recognition on images
             texts = (textFromImage(images[0]), textFromImage(images[1]))
             # Find a card name that most closely matches text from images

@@ -1,0 +1,4 @@
+
+env = Environment(CCFLAGS = ['-O2', '-Wall'])
+
+env.Program("MotorControl", "main.c")
