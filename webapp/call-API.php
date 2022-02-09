@@ -4,7 +4,40 @@
     $message = "test";
 
     $bulkJsonName = "art-and-names.json";
+    
+    function myCurlInit()
+    {
+        /*
+        $ch = curl_init();
+        //curl_setopt($ch, CURLOPT_URL, "http://www.google.com");
+        curl_setopt($ch, CURLOPT_URL, "https://api.scryfall.com/cards/search?q=Knight of the White Orchid");
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For HTTPS
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // For HTTPS
+        $response=curl_exec($ch);
+        echo $response; 
+        sleep(1);
+        curl_setopt($ch, CURLOPT_URL, "https://api.scryfall.com/cards/search?q=Thragtusk");
+        $response = curl_exec($ch);
+        //echo $response;
+        curl_close($ch);   
+        */
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For HTTPS
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // For HTTPS
 
+        return $ch;
+    }
+
+    function curlSearch($ch, $searchName)
+    {
+        curl_setopt($ch, CURLOPT_URL, "https://api.scryfall.com/cards/search?q=$searchName");
+        $response = curl_exec($ch);
+        echo $response;
+    }
     // Useage: Downloads the bulk JSON art file from scryfall 
     // Precondition: None
     // Postcondition: File with json information on each card artwork 
@@ -163,7 +196,7 @@
 
         ini_set('max_execution_time', '0'); // it will time out otherwise 
 
-
+        /*
         echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Abrupt%20Decay\""));
         sleep(1);
         echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Flickerwisp\""));
@@ -175,9 +208,10 @@
         echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Thragtusk\""));
         sleep(1);
         echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"Abrupt%20Decay\""));
-        
+        */
 
-
+        $ch = myCurlInit();
+        curlSearch($ch, "Fury Sliver");
         
         // loop through each record of table 
         for ($row_num = 0; $row_num < $num_rows; $row_num++) {
