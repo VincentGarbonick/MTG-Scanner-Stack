@@ -20,7 +20,7 @@
     {
         curl_setopt($ch, CURLOPT_URL, "https://api.scryfall.com/cards/search?q=$searchName");
         $response = curl_exec($ch);
-        echo $response;
+        return $response;
     }
     // Useage: Downloads the bulk JSON art file from scryfall 
     // Precondition: None
@@ -187,11 +187,21 @@
             // For some reason, cards with "hawk" in the name will return 400 bad request errors unless 
             // the name is entirely in lower case. I don't know why this is. I am sorry. 
             $currentName = strtolower($values[0]); 
-            echo curlSearch($ch, $currentName);
-            usleep(60 * 1000); // sleep for 6ms, per the insturctions from scryfall
+            $cardInformation = curlSearch($ch, $currentName);
+            
+            $cardInformation = json_decode($cardInformation, TRUE); // parse to json 
+
+            $cardPrice = $cardInformation["data"][0]["prices"]["usd"];
+            $cardFoilPrice = $cardInformation["data"][0]["prices"]["usd_foil"];
+            
+            $updateQuery = "UPDATE $tableName SET price = $cardPrice WHERE cardName = \"$currentName\"";
+
+            mysqli_query($conn,$updateQuery);
+
+            usleep(60 * 1000); // sleep for 6ms, per the instructions from scryfall
 
             // TODO: INCREMENT PROGRESS BAR HERE 
-
+            // TOOD: ADD FOIL PRICE 
             $row = mysqli_fetch_array($result);
 
         } 
