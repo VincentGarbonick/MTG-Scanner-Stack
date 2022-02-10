@@ -4,7 +4,24 @@
     $message = "test";
 
     $bulkJsonName = "art-and-names.json";
+    
+    function myCurlInit()
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For HTTPS
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // For HTTPS
 
+        return $ch;
+    }
+
+    function curlSearch($ch, $searchName)
+    {
+        curl_setopt($ch, CURLOPT_URL, "https://api.scryfall.com/cards/search?q=$searchName");
+        $response = curl_exec($ch);
+        return $response;
+    }
     // Useage: Downloads the bulk JSON art file from scryfall 
     // Precondition: None
     // Postcondition: File with json information on each card artwork 
@@ -115,9 +132,10 @@
     {
         // get the json information 
         $jsonFileName = "art-and-names.json";
-        $file = file_get_contents($jsonFileName);
+        $jFile = file_get_contents($jsonFileName);
 
-        while(!$file)
+        // if we don't have a $jsonFileName, which is the place where all the card information resides, we make a new one
+        while(!$jFile)
         {
             // set a high memory limit since this is a huge file 
             ini_set('memory_limit','500M');
@@ -133,10 +151,8 @@
                 echo("Bad download response, something is wrong.");
             }
 
-            $file = file_get_contents($jsonFileName);
+            $jFile = file_get_contents($jsonFileName);
         }
-
-
 
         $hostname = "localhost";
         $username = "root";
@@ -154,13 +170,46 @@
         $num_rows = mysqli_num_rows($result);
         $num_fields = mysqli_num_fields($result);
 
+        ini_set('memory_limit','500M'); // set a lot of memory, because we will be scanning 
+                                        // a lot of data 
+        //echo json_encode(file_get_contents("https://api.scryfall.com/cards/search?q=\"$currentName\""));
+
+        ini_set('max_execution_time', '0'); // it will time out otherwise 
+
+        $ch = myCurlInit();
+        
         // loop through each record of table 
         for ($row_num = 0; $row_num < $num_rows; $row_num++) {
+            //$values = array_values($row);
             $values = array_values($row);
-            print $values[0];
-            echo "<br>";
+
+            // current name that we are "on" right now 
+            // For some reason, cards with "hawk" in the name will return 400 bad request errors unless 
+            // the name is entirely in lower case. I don't know why this is. I am sorry. 
+            $currentName = strtolower($values[0]); 
+            $cardInformation = curlSearch($ch, $currentName);
+            
+            $cardInformation = json_decode($cardInformation, TRUE); // parse to json 
+
+            $cardPrice = $cardInformation["data"][0]["prices"]["usd"];
+            $cardFoilPrice = $cardInformation["data"][0]["prices"]["usd_foil"];
+            
+            $updateQuery = "UPDATE $tableName SET price = $cardPrice WHERE cardName = \"$currentName\"";
+
+            mysqli_query($conn,$updateQuery);
+
+            $updateQuery = "UPDATE $tableName SET foilPrice = $cardFoilPrice WHERE cardName = \"$currentName\"";
+
+            mysqli_query($conn,$updateQuery);
+
+            usleep(60 * 1000); // sleep for 6ms, per the instructions from scryfall
+
+            // TODO: INCREMENT PROGRESS BAR HERE 
+            // TOOD: ADD FOIL PRICE 
             $row = mysqli_fetch_array($result);
+
         } 
+        header("Location: table-viewer.php"); 
     }
     else 
     {

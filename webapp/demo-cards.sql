@@ -8,18 +8,19 @@ CREATE TABLE mtgCards
     cardName VARCHAR(30) UNIQUE NOT NULL,
     qty INT NOT NULL,
     price FLOAT,
+    foilPrice FLOAT,
     PRIMARY KEY (cardName)
 );
 
 insert into mtgCards values
-("Trained Caracal", 3, 0.30),
-("Liliana Vess", 2, 15),
-("Thragtusk", 10, 1.00),
-("Fury Sliver", 10, 1.00),
-("Prowling Serpopard", 10, 2.00),
-("Jace, the Mind Sculptor", 15, 150.00),
-("Flickerwisp", 10, 10.00),
-("Squadron Hawk", 10, 1.00),
-("Abrupt Decay", 5, 31.00),
-("Kitchen Finks", 2, 10.00),
-("Siege Rhino", 5, 2.00);
+("Trained Caracal", 3, 0.30, 0.30),
+("Liliana Vess", 2, 15,15),
+("Thragtusk", 10, 1.00,1.00),
+("Fury Sliver", 10, 1.00,1.00),
+("Prowling Serpopard", 10, 2.00,2.00),
+("Jace, the Mind Sculptor", 15, 150.00,150.00),
+("Flickerwisp", 10, 10.00, 10.00),
+("Squadron Hawk", 10, 1.00,1.00),
+("Abrupt Decay", 5, 31.00,31.00),
+("Kitchen Finks", 2, 10.00,10.00),
+("Siege Rhino", 5, 2.00,2.00);

@@ -52,6 +52,7 @@
                   <th class="table-header-text" scope="col">Card Name</th>
                   <th class="table-header-text" scope="col">Quantity</th>
                   <th class="table-header-text" scope="col">Price</th>
+                  <th class="table-header-text" scope="col">Foil Price</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,9 +79,13 @@
                         $values = array_values($row);
                         for ($index = 0; $index < $num_fields; $index++){
                             $value = htmlspecialchars($values[2 * $index + 1]);
-                            if($index != 0)
+                            if($index == 2 || $index == 3)
                             {
-                              print "<th>" . $value . "</th> ";
+                              echo "<th>"."$". number_format($value,2,".",",")."</th>";
+                            }
+                            else if($index != 0)
+                            {
+                              echo "<th>".$value."</th>";
                             }
                             else 
                             {
