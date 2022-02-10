@@ -52,5 +52,5 @@ void step_duration(unsigned int duration, unsigned int frequency)
 int main()
 {
     initialize();
-    step_duration(1, 2000);
+    step_duration(5, 2000);
 }
