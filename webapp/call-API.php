@@ -198,6 +198,10 @@
 
             mysqli_query($conn,$updateQuery);
 
+            $updateQuery = "UPDATE $tableName SET foilPrice = $cardFoilPrice WHERE cardName = \"$currentName\"";
+
+            mysqli_query($conn,$updateQuery);
+
             usleep(60 * 1000); // sleep for 6ms, per the instructions from scryfall
 
             // TODO: INCREMENT PROGRESS BAR HERE 
@@ -205,7 +209,7 @@
             $row = mysqli_fetch_array($result);
 
         } 
-        
+        header("Location: table-viewer.php"); 
     }
     else 
     {
