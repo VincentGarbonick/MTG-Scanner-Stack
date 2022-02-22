@@ -12,6 +12,7 @@ sqlUser = "root"
 sqlPass = ""
 sqlDB = "magic"
 sqlSock = "/opt/lampp/var/mysql/mysql.sock"
+sqlSock = "/var/run/mysqld/mysqld.sock"
 
 def connectDatabase():
     """
@@ -36,11 +37,14 @@ def incrementValue(keyName, valueName = "qty"):
     connection = connectDatabase()
     cur = connection.cursor()
     try:
-        cur.execute(f"INSERT INTO mtgCards VALUES ('{keyName}', 1, 0)")
+        print(f"NEW ENTRY:\nINSERT INTO mtgCards VALUES ('{keyName}', 0, 0, 1)")
+        print(f"EXISTING ENTRY:\nUPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+        escapedName = keyName.replace( "'", "''")
+        cur.execute(f"INSERT INTO mtgCards VALUES ('{escapedName}', 0, 0, 1)")
         print(f"Added new entry ({keyName}, 1, 0)")
     except mysql.connector.errors.IntegrityError as e:
         try:
-            cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+            cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{escapedName}'")
             print(f"Incremented entry {keyName}")
         except Exception as e:
             print(e)
@@ -66,6 +70,7 @@ def processImage(imageFile):
     #crop = (left, top, right, bottom)
     # These values will need to be adjusted to crop the title area depending on our camera
     originalCrop = (39, 39, 390, 69)
+    originalCrop = (342, 291, 800, 350)
 
     # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
@@ -74,6 +79,7 @@ def processImage(imageFile):
     image = image.crop(originalCrop)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
+    image.save("Testing.jpeg")
     rotatedCopy = rotatedCopy.crop(originalCrop)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
@@ -89,6 +95,7 @@ def textFromImage(image):
     """
     text = pytesseract.image_to_string(image)
     text = text.split('\n')[0]
+    print(f"Text from image: [{text}]")
     return text
 
 
