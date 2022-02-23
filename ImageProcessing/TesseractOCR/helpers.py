@@ -113,7 +113,7 @@ def getCloseMatches(cardName, cutoff=0.6, num=1):
              If ratio is 0, no matches were found.
     """
     try:
-        with open("cardNames.json", mode="r") as file:
+        with open("cardNames.json", mode="r") as file: # TODO: Map this file in memory for quicker access times, or just keep namesList list object in memory.
             namesList = json.loads(file.read())
     except Exception as e:
         print(f"Could not read cardNames.json - {e}")
