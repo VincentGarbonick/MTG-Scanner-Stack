@@ -5,6 +5,7 @@ import urllib.request
 import pytesseract
 import PIL.ImageFilter
 import mysql.connector
+import sys
 from PIL import Image
 import os
 
@@ -102,18 +103,19 @@ def textFromImage(image):
 
 
 
-def getCloseMatches(cardName, cutoff=0.6, num=1):
+def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
     """
     Gets the closest match(s) to cardName from the list of all names in cardNames.json
 
     :param cardName: The card name string to find a match of
+    :param namesList: A list containing all possible names
     :param cutoff: 0-1 float that defines the lowest "closeness" ratio acceptable
     :param num: Number of matches to return
     :return: Returns a tuple containing a (len(possibilities) list of matches, and ratio float of match closeness)
              If ratio is 0, no matches were found.
     """
     try:
-        with open("cardNames.json", mode="r") as file: # TODO: Map this file in memory for quicker access times, or just keep namesList list object in memory.
+        with open("cardNames.json", mode="r") as file: 
             namesList = json.loads(file.read())
     except Exception as e:
         print(f"Could not read cardNames.json - {e}")

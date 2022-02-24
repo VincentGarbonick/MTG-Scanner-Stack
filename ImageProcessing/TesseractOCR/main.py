@@ -33,6 +33,13 @@ if __name__ == "__main__":
     #print(getCloseMatches(text))
 
     #initialize()
+    namesList = []
+    try:
+        with open("cardNames.json", mode="r") as file: 
+            namesList = json.loads(file.read())
+    except Exception as e:
+        print(f"Could not read cardNames.json - {e}")
+        sys.exit(1)
 
     while True:
         # Check if there are any files in ImageTemp/ directory
@@ -51,7 +58,7 @@ if __name__ == "__main__":
             # Perform text recognition on images
             texts = (textFromImage(images[0]), textFromImage(images[1]))
             # Find a card name that most closely matches text from images
-            texts = (getCloseMatches(texts[0]), getCloseMatches(texts[1]))
+            texts = (getCloseMatches(texts[0], namesList), getCloseMatches(texts[1], namesList))
 
             # If no close card name matches are found from the images, remove the image and continue with next file
             if texts[0][1] == 0 and texts[1][1] == 0:
