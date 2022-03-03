@@ -213,7 +213,8 @@
     }
     else 
     {
-        echo "uh oh";
+        echo "<p style=\"font-size:41px;\">uh oh</p>";
+        echo "<img src=\"maple-oops.png\" style=\"height:800px; width:auto;\">";
     }
 
 
