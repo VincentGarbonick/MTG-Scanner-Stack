@@ -39,6 +39,9 @@
         <form action="call-API.php" method="post">
           <button class="btn-hover color-3 center" id="price-button" name="price-button">Refresh Prices</button>
         </form>
+        <form action="call-API.php" method="post">
+          <button class="btn-hover color-5 center" id="export-button" name="export-button">Export Cards</button>
+        </form>
     </div>
     <div class="sidebar-right text-center">
         <img src="./demo-img/demo-img-med/Flickerwisp.jpg" class="center sidebar-image-spec" style="padding-top: 10px;" id="sidebarImage">
