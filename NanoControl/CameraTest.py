@@ -1,28 +1,39 @@
 from jetcam.csi_camera import *
 from PIL import Image
 import time, hashlib, sys
+import Jetson.GPIO as GPIO
+
+cameraReady = False
+
+ENABLE_PIN = 11
+DIR_PIN = 15
 
 def camera_callback(change):
-    """
-    TODO:
-    Use messaging interface to synchronize image capture and motor advancement
-
-    Motor code sends message to capture image once card/motor is in position
-    in camera_callback, if message that system is ready for picture, capture and save image to disk
-    Send message back to motor program after finished with operations
-    When motor code receives this message, it continues and advances to next card
-    
-    """
+    global cameraReady
     new_image = change["new"]
     
     hash = hashlib.md5(bytes(new_image))
-    print(hash.hexdigest())
+    #print(hash.hexdigest())
 
     new_image = Image.fromarray(new_image)
-    new_image.save(f"test{hash.hexdigest()}.jpeg")
-    sys.exit(0)
+    if cameraReady:
+        new_image.save(f"test{hash.hexdigest()}.jpeg")
+        print(f"Image {hash.hexdigest()} saved")
+        cameraReady = False
+
+
+def init():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(ENABLE_PIN, GPIO.OUT)
+    GPIO.setup(DIR_PIN, GPIO.OUT)
+
+    GPIO.output(ENABLE_PIN, GPIO.LOW)
+    GPIO.output(DIR_PIN, GPIO.LOW)
+
+
 
 if __name__ == "__main__":
+    init()
 
     # Custom args for our camera to try and optimize image quality for our environment
     # Note: This uses fork of jetcam library
@@ -37,8 +48,29 @@ if __name__ == "__main__":
     cam = CSICamera(custom_args = GStreamerArgs)
     cam.running = True
     cam.observe(camera_callback)
-    time.sleep(10)
-    sys.exit(0)
+    
+    
+    while True:
+        # Run forward for 1 second
+        GPIO.output(DIR_PIN, GPIO.HIGH)
+        GPIO.output(ENABLE_PIN, GPIO.HIGH)
+        time.sleep(1)
+        # Pause for 0.25 seconds
+        GPIO.output(ENABLE_PIN, GPIO.LOW)
+        time.sleep(0.25)
+        # Run backwards for 0.2 seconds
+        GPIO.output(DIR_PIN, GPIO.LOW)
+        GPIO.output(ENABLE_PIN, GPIO.HIGH)
+        time.sleep(0.2)
+        # Pause for 0.5 seconds, or until picture taken and cameraReady returns to False
+        GPIO.output(ENABLE_PIN, GPIO.LOW)
+
+        cameraReady = True
+        while cameraReady:
+            time.sleep(0.1)
+
+        time.sleep(0.5)
+
 
 
     
