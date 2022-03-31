@@ -55,22 +55,27 @@ if __name__ == "__main__":
             images = processImage(fr"ImageTemp/{oldestFile}")
             if images == 1:
                 continue
+            originalImage = images[0]
+            rotatedImage = images[1]
+
             # Perform text recognition on images
-            texts = (textFromImage(images[0]), textFromImage(images[1]))
+            originalImageText = textFromImage(images[0])
+            rotatedImageText = textFromImage(images[1])
             # Find a card name that most closely matches text from images
-            texts = (getCloseMatches(texts[0], namesList), getCloseMatches(texts[1], namesList))
+            originalImageMatch = getCloseMatches(originalImageText, namesList)
+            rotatedImageMatch = getCloseMatches(rotatedImageText, namesList)
 
             # If no close card name matches are found from the images, remove the image and continue with next file
-            if texts[0][1] == 0 and texts[1][1] == 0:
-                print(f"No matches found for {images} - {texts}")
+            if originalImageMatch.ratio == 0 and rotatedImageMatch.ratio == 0:
+                print(f"No matches found for {images} - [{originalImageText}, {rotatedImageText}]")
                 os.remove(fr"ImageTemp/{oldestFile}")
                 continue
 
             # Determine which name has the closest match
-            if texts[0][1] > texts[1][1]:
-                text = texts[0][0][0]
+            if originalImageMatch.ratio > rotatedImageMatch.ratio:
+                text = originalImageMatch.matchName
             else:
-                text = texts[1][0][0]
+                text = rotatedImageMatch.matchName
 
             # 'text' variable now contains the closest matching card name from the picture.
             print(f"Got card name match {text}")

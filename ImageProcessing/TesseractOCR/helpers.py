@@ -100,7 +100,11 @@ def textFromImage(image):
     return text
 
 
-
+class nameMatch:
+    def __init__(self, matchList, ratio):
+        self.matchList = matchList
+        self.matchName = matchList[0]
+        self.ratio = ratio
 
 
 def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
@@ -124,7 +128,7 @@ def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
     ratio = 0
     if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
-    return (similarList, ratio)
+    return nameMatch(similarList, ratio)
 
 
 def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"):
