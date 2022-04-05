@@ -1,0 +1,3 @@
+[submodule "jetcam"]
+	path = jetcam
+	url = https://github.com/jav76/jetcam
