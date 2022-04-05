@@ -1,15 +1,79 @@
 from jetcam.csi_camera import *
 from PIL import Image
+import time, hashlib, sys
+import Jetson.GPIO as GPIO
 
+cameraReady = False
+
+ENABLE_PIN = 11
+DIR_PIN = 15
+
+def camera_callback(change):
+    global cameraReady
+    new_image = change["new"]
+    
+    hash = hashlib.md5(bytes(new_image))
+    #print(hash.hexdigest())
+
+    new_image = Image.fromarray(new_image)
+    if cameraReady:
+        new_image.save(f"test{hash.hexdigest()}.jpeg")
+        print(f"Image {hash.hexdigest()} saved")
+        cameraReady = False
+
+
+def init():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(ENABLE_PIN, GPIO.OUT)
+    GPIO.setup(DIR_PIN, GPIO.OUT)
+
+    GPIO.output(ENABLE_PIN, GPIO.LOW)
+    GPIO.output(DIR_PIN, GPIO.LOW)
 
 
 
 if __name__ == "__main__":
-    cam = CSICamera(width=1920, height=1080, capture_width=3280, capture_height=2464, capture_fps=4 )
-    test = cam.read()
+    init()
+
+    # Custom args for our camera to try and optimize image quality for our environment
+    # Note: This uses fork of jetcam library
+    GStreamerArgs = f"""
+    nvarguscamerasrc sensor-id=0 ! 
+    video/x-raw(memory:NVMM), width=3264, height=2464, 
+    format=(string)NV12, framerate=(fraction)2/1, exposuretimerange="200000 400000", 
+    ee-mode=2, ee-strength=1, tnr-strength=1, tnr-mode=2 ! nvvidconv flip-method=1 ! 
+    nvvidconv ! video/x-raw, width=(int)3264, height=(int)2464, 
+    format=(string)GRAY8 ! videoconvert ! appsink"""
+
+    cam = CSICamera(custom_args = GStreamerArgs)
+    cam.running = True
+    cam.observe(camera_callback)
+    
+    
+    while True:
+        # Run forward for 1 second
+        GPIO.output(DIR_PIN, GPIO.HIGH)
+        GPIO.output(ENABLE_PIN, GPIO.HIGH)
+        time.sleep(1)
+        # Pause for 0.25 seconds
+        GPIO.output(ENABLE_PIN, GPIO.LOW)
+        time.sleep(0.25)
+        # Run backwards for 0.2 seconds
+        GPIO.output(DIR_PIN, GPIO.LOW)
+        GPIO.output(ENABLE_PIN, GPIO.HIGH)
+        time.sleep(0.2)
+        # Pause for 0.5 seconds, or until picture taken and cameraReady returns to False
+        GPIO.output(ENABLE_PIN, GPIO.LOW)
+
+        cameraReady = True
+        while cameraReady:
+            time.sleep(0.1)
+
+        time.sleep(0.5)
+
+
+
+    
+    
     
 
-    print(cam.value)
-    print(cam.value)
-    asdf = Image.fromarray(cam.value)
-    asdf.show()

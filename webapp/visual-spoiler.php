@@ -17,6 +17,9 @@
         <form action="table-viewer.php">
             <button class="btn-hover color-1 center">List View</button>
         </form>
+        <form action="call-API.php" method="post">
+          <button class="btn-hover color-5 center" id="export-button" name="export-button">Export Cards</button>
+        </form>
     </div>
     <div class="container-fluid">
         <?php

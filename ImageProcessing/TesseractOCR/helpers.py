@@ -5,6 +5,7 @@ import urllib.request
 import pytesseract
 import PIL.ImageFilter
 import mysql.connector
+import sys
 from PIL import Image
 import os
 
@@ -12,6 +13,7 @@ sqlUser = "root"
 sqlPass = ""
 sqlDB = "magic"
 sqlSock = "/opt/lampp/var/mysql/mysql.sock"
+sqlSock = "/var/run/mysqld/mysqld.sock"
 
 def connectDatabase():
     """
@@ -36,11 +38,14 @@ def incrementValue(keyName, valueName = "qty"):
     connection = connectDatabase()
     cur = connection.cursor()
     try:
-        cur.execute(f"INSERT INTO mtgCards VALUES ('{keyName}', 1, 0)")
+        print(f"NEW ENTRY:\nINSERT INTO mtgCards VALUES ('{keyName}', 0, 0, 1)")
+        print(f"EXISTING ENTRY:\nUPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+        escapedName = keyName.replace( "'", "''")
+        cur.execute(f"INSERT INTO mtgCards VALUES ('{escapedName}', 0, 0, 1)")
         print(f"Added new entry ({keyName}, 1, 0)")
     except mysql.connector.errors.IntegrityError as e:
         try:
-            cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{keyName}'")
+            cur.execute(f"UPDATE mtgCards SET {valueName} = {valueName} + 1 WHERE cardName = '{escapedName}'")
             print(f"Incremented entry {keyName}")
         except Exception as e:
             print(e)
@@ -66,6 +71,7 @@ def processImage(imageFile):
     #crop = (left, top, right, bottom)
     # These values will need to be adjusted to crop the title area depending on our camera
     originalCrop = (39, 39, 390, 69)
+    originalCrop = (342, 291, 800, 350)
 
     # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
@@ -74,6 +80,7 @@ def processImage(imageFile):
     image = image.crop(originalCrop)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
+    image.save("Testing.jpeg")
     rotatedCopy = rotatedCopy.crop(originalCrop)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
@@ -89,24 +96,30 @@ def textFromImage(image):
     """
     text = pytesseract.image_to_string(image)
     text = text.split('\n')[0]
+    print(f"Text from image: [{text}]")
     return text
 
 
+class nameMatch:
+    def __init__(self, matchList, ratio):
+        self.matchList = matchList
+        self.matchName = matchList[0]
+        self.ratio = ratio
 
 
-
-def getCloseMatches(cardName, cutoff=0.6, num=1):
+def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
     """
     Gets the closest match(s) to cardName from the list of all names in cardNames.json
 
     :param cardName: The card name string to find a match of
+    :param namesList: A list containing all possible names
     :param cutoff: 0-1 float that defines the lowest "closeness" ratio acceptable
     :param num: Number of matches to return
     :return: Returns a tuple containing a (len(possibilities) list of matches, and ratio float of match closeness)
              If ratio is 0, no matches were found.
     """
     try:
-        with open("cardNames.json", mode="r") as file:
+        with open("cardNames.json", mode="r") as file: 
             namesList = json.loads(file.read())
     except Exception as e:
         print(f"Could not read cardNames.json - {e}")
@@ -115,7 +128,7 @@ def getCloseMatches(cardName, cutoff=0.6, num=1):
     ratio = 0
     if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
-    return (similarList, ratio)
+    return nameMatch(similarList, ratio)
 
 
 def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"):

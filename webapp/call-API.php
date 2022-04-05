@@ -211,9 +211,37 @@
         } 
         header("Location: table-viewer.php"); 
     }
+    elseif(isset($_POST["export-button"]))
+    {
+        $myFile = fopen("export.txt", "w");
+
+        $hostname = "localhost";
+        $username = "root";
+        $pass = "";
+        $dbName = "magic";
+        $tableName = "mtgCards";
+        $conn = mysqli_connect($hostname, $username, $pass, $dbName);
+        $query = "SELECT qty, cardName FROM $tableName";
+        $result = mysqli_query($conn,$query);
+        
+        $row = mysqli_fetch_array($result);
+        
+        $num_rows = mysqli_num_rows($result);
+        $num_fields = mysqli_num_fields($result);
+
+        for ($row_num = 0; $row_num < $num_rows; $row_num++) {
+            $values = array_values($row);
+            $text = "$values[0] $values[2] \n";
+            fwrite($myFile, $text);
+            $row = mysqli_fetch_array($result);
+        } 
+        fclose($myFile);
+    }
+
     else 
     {
-        echo "uh oh";
+        echo "<p style=\"font-size:41px;\">uh oh</p>";
+        echo "<img src=\"maple-oops .png\" style=\"height:800px; width:auto;\">";
     }
 
 
