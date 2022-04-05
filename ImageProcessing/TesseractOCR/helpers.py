@@ -6,14 +6,20 @@ import pytesseract
 import PIL.ImageFilter
 import mysql.connector
 import sys
-from PIL import Image
+import hashlib
+from PIL import Image, ImageDraw, ImageColor
 import os
 
-sqlUser = "root"
-sqlPass = ""
-sqlDB = "magic"
-sqlSock = "/opt/lampp/var/mysql/mysql.sock"
-sqlSock = "/var/run/mysqld/mysqld.sock"
+SQL_USER = "root"
+SQL_PASS = ""
+SQL_DB_NAME = "magic"
+SQL_SOCK_LAMPP = "/opt/lampp/var/mysql/mysql.sock"
+SQL_SOCK = "/var/run/mysqld/mysqld.sock"
+
+
+#crop = (left, top, right, bottom)
+# These values will need to be adjusted to crop the title area depending on our camera
+CROP_COORDS = (342, 291, 800, 350)
 
 def connectDatabase():
     """
@@ -22,10 +28,10 @@ def connectDatabase():
     :return: mysql.connector.connection object
     """
     sqlConnection = mysql.connector.connect(
-        user=sqlUser,
-        passwd=sqlPass,
-        db=sqlDB,
-        unix_socket=sqlSock)
+        user=SQL_USER,
+        passwd=SQL_PASS,
+        db=SQL_DB_NAME,
+        unix_socket=SQL_SOCK)
     return sqlConnection
 
 def incrementValue(keyName, valueName = "qty"):
@@ -54,6 +60,36 @@ def incrementValue(keyName, valueName = "qty"):
     connection.close()
     return 0
 
+
+def imageCropVisual(imageFile, cropVals=CROP_COORDS):
+    """
+    Creates a image file that has outlined the crop area and saves it to current directory for viewing/testing purposes
+
+    :param imageFile: File of image to be processed
+    :param cropVals: Crop values used to crop the image
+    :return: 0 - success
+    """
+
+    try:
+        image = Image.open(imageFile):
+    except Exception as e:
+        print(f"Could not open image file {imageFile} - {e}")
+        return 1
+    
+    
+#crop = (left, top, right, bottom)
+    draw = ImageDraw(image)
+    draw.line(
+        [(cropVals[0], cropVals[1]), (cropVals[2], cropVals[1])],
+        fill=ImageColor.getrgb("yellow"),
+        width = 2
+    )
+    hash = hashlib.md5(bytes(image))
+    image.save(f"Cropped_{hash.hexdigest()[0:8]}.jpeg")
+
+
+
+
 def processImage(imageFile):
     """
     Creates a copy of image and rotates it. Both images are then cropped, filtered, and returned as a tuple.
@@ -68,20 +104,15 @@ def processImage(imageFile):
         print(f"Could not open image file {imageFile} - {e}")
         return 1
 
-    #crop = (left, top, right, bottom)
-    # These values will need to be adjusted to crop the title area depending on our camera
-    originalCrop = (39, 39, 390, 69)
-    originalCrop = (342, 291, 800, 350)
-
     # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
+    imageCropVisual(imageFile)
 
     # Crop the images, convert them to 8 bit black and white, and apply a median filter
-    image = image.crop(originalCrop)
+    image = image.crop(CROP_COORDS)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
-    image.save("Testing.jpeg")
-    rotatedCopy = rotatedCopy.crop(originalCrop)
+    rotatedCopy = rotatedCopy.crop(CROP_COORDS)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
 

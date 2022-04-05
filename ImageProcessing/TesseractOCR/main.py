@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #print(text)
     #print(getCloseMatches(text))
 
-    #initialize()
+    initialize()
     namesList = []
     try:
         with open("cardNames.json", mode="r") as file: 
