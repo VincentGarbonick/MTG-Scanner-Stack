@@ -20,6 +20,7 @@ SQL_SOCK = "/var/run/mysqld/mysqld.sock"
 #crop = (left, top, right, bottom)
 # These values will need to be adjusted to crop the title area depending on our camera
 CROP_COORDS = (342, 291, 800, 350)
+CROP_COORDS = (39, 39, 390, 69)
 
 def connectDatabase():
     """
@@ -71,23 +72,40 @@ def imageCropVisual(imageFile, cropVals=CROP_COORDS):
     """
 
     try:
-        image = Image.open(imageFile):
+        image = Image.open(imageFile)
     except Exception as e:
         print(f"Could not open image file {imageFile} - {e}")
         return 1
     
     
 #crop = (left, top, right, bottom)
-    draw = ImageDraw(image)
+    draw = ImageDraw.Draw(image)
+    # Top line
     draw.line(
         [(cropVals[0], cropVals[1]), (cropVals[2], cropVals[1])],
-        fill=ImageColor.getrgb("yellow"),
-        width = 2
+        fill = ImageColor.getrgb("yellow"),
+        width = 4
     )
-    hash = hashlib.md5(bytes(image))
+    # Bottom line
+    draw.line(
+        [(cropVals[0], cropVals[3]), (cropVals[2], cropVals[3])],
+        fill = ImageColor.getrgb("yellow"),
+        width = 4
+    )
+    # Left line
+    draw.line(
+        [(cropVals[0], cropVals[1]), (cropVals[0], cropVals[3])],
+        fill = ImageColor.getrgb("yellow"),
+        width = 4
+    )
+    # Right line
+    draw.line(
+        [(cropVals[2], cropVals[1]), (cropVals[2], cropVals[3])],
+        fill = ImageColor.getrgb("yellow"),
+        width = 4
+    )
+    hash = hashlib.md5(bytes(image.tobytes()))
     image.save(f"Cropped_{hash.hexdigest()[0:8]}.jpeg")
-
-
 
 
 def processImage(imageFile):
@@ -134,7 +152,8 @@ def textFromImage(image):
 class nameMatch:
     def __init__(self, matchList, ratio):
         self.matchList = matchList
-        self.matchName = matchList[0]
+        if len(matchList) > 0:
+           self.matchName = matchList[0]
         self.ratio = ratio
 
 
