@@ -49,27 +49,31 @@ if __name__ == "__main__":
     cam.running = True
     cam.observe(camera_callback)
     
+    try:
+        while True:
+            # Run forward for 1 second
+            GPIO.output(DIR_PIN, GPIO.HIGH)
+            GPIO.output(ENABLE_PIN, GPIO.HIGH)
+            time.sleep(1)
+            # Pause for 0.25 seconds
+            GPIO.output(ENABLE_PIN, GPIO.LOW)
+            time.sleep(0.25)
+            # Run backwards for 0.2 seconds
+            GPIO.output(DIR_PIN, GPIO.LOW)
+            GPIO.output(ENABLE_PIN, GPIO.HIGH)
+            time.sleep(0.2)
+            # Pause for 0.5 seconds, or until picture taken and cameraReady returns to False
+            GPIO.output(ENABLE_PIN, GPIO.LOW)
+
+            cameraReady = True
+            while cameraReady:
+                time.sleep(0.1)
+
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("Cleaning up GPIO")
+        GPIO.cleanup()
     
-    while True:
-        # Run forward for 1 second
-        GPIO.output(DIR_PIN, GPIO.HIGH)
-        GPIO.output(ENABLE_PIN, GPIO.HIGH)
-        time.sleep(1)
-        # Pause for 0.25 seconds
-        GPIO.output(ENABLE_PIN, GPIO.LOW)
-        time.sleep(0.25)
-        # Run backwards for 0.2 seconds
-        GPIO.output(DIR_PIN, GPIO.LOW)
-        GPIO.output(ENABLE_PIN, GPIO.HIGH)
-        time.sleep(0.2)
-        # Pause for 0.5 seconds, or until picture taken and cameraReady returns to False
-        GPIO.output(ENABLE_PIN, GPIO.LOW)
-
-        cameraReady = True
-        while cameraReady:
-            time.sleep(0.1)
-
-        time.sleep(0.5)
 
 
 
