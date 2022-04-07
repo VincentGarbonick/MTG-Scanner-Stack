@@ -40,7 +40,7 @@ if __name__ == "__main__":
     GStreamerArgs = f"""
     nvarguscamerasrc sensor-id=0 ! 
     video/x-raw(memory:NVMM), width=3264, height=2464, 
-    format=(string)NV12, framerate=(fraction)2/1, exposuretimerange="200000 400000", 
+    format=(string)NV12, framerate=(fraction)8/1, exposuretimerange="200000 400000", 
     ee-mode=2, ee-strength=1, tnr-strength=1, tnr-mode=2 ! nvvidconv flip-method=1 ! 
     nvvidconv ! video/x-raw, width=(int)3264, height=(int)2464, 
     format=(string)GRAY8 ! videoconvert ! appsink"""
