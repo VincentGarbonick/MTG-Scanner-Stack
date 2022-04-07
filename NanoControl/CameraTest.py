@@ -55,16 +55,12 @@ if __name__ == "__main__":
             GPIO.output(DIR_PIN, GPIO.HIGH)
             GPIO.output(ENABLE_PIN, GPIO.HIGH)
             time.sleep(1)
+            
             # Pause for 0.25 seconds
             GPIO.output(ENABLE_PIN, GPIO.LOW)
             time.sleep(0.25)
-            # Run backwards for 0.2 seconds
-            GPIO.output(DIR_PIN, GPIO.LOW)
-            GPIO.output(ENABLE_PIN, GPIO.HIGH)
-            time.sleep(0.2)
-            # Pause for 0.5 seconds, or until picture taken and cameraReady returns to False
-            GPIO.output(ENABLE_PIN, GPIO.LOW)
 
+            # Pause for at least 0.6 seconds up to picture taken and cameraReady returns to False
             cameraReady = True
             while cameraReady:
                 time.sleep(0.1)

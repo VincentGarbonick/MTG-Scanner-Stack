@@ -21,6 +21,7 @@ SQL_SOCK = "/var/run/mysqld/mysqld.sock"
 # These values will need to be adjusted to crop the title area depending on our camera
 CROP_COORDS = (342, 291, 800, 350)
 CROP_COORDS = (39, 39, 390, 69)
+CROP_COORDS = (680, 700, 1560, 760)
 
 def connectDatabase():
     """
@@ -83,29 +84,30 @@ def imageCropVisual(imageFile, cropVals=CROP_COORDS):
     # Top line
     draw.line(
         [(cropVals[0], cropVals[1]), (cropVals[2], cropVals[1])],
-        fill = ImageColor.getrgb("yellow"),
+        fill = 0,
         width = 4
     )
     # Bottom line
     draw.line(
         [(cropVals[0], cropVals[3]), (cropVals[2], cropVals[3])],
-        fill = ImageColor.getrgb("yellow"),
+        fill = 0,
         width = 4
     )
     # Left line
     draw.line(
         [(cropVals[0], cropVals[1]), (cropVals[0], cropVals[3])],
-        fill = ImageColor.getrgb("yellow"),
+        fill = 0,
         width = 4
     )
     # Right line
     draw.line(
         [(cropVals[2], cropVals[1]), (cropVals[2], cropVals[3])],
-        fill = ImageColor.getrgb("yellow"),
+        fill = 0,
         width = 4
     )
     hash = hashlib.md5(bytes(image.tobytes()))
     image.save(f"Cropped_{hash.hexdigest()[0:7]}.jpeg")
+    return 0
 
 
 def processImage(imageFile):
@@ -153,7 +155,7 @@ class nameMatch:
     def __init__(self, matchList, ratio):
         self.matchList = matchList
         if len(matchList) > 0:
-           self.matchName = matchList[0]
+            self.matchName = matchList[0]
         else:
             self.matchName = ""
         self.ratio = ratio

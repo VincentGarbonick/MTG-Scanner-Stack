@@ -2,12 +2,12 @@
     "object": "bulk_data",
     "id": "e2ef41e3-5778-4bc2-af3f-78eca4dd9c23",
     "type": "default_cards",
-    "updated_at": "2022-04-06T09:02:58.287+00:00",
+    "updated_at": "2022-04-07T09:02:48.668+00:00",
     "uri": "https://api.scryfall.com/bulk-data/e2ef41e3-5778-4bc2-af3f-78eca4dd9c23",
     "name": "Default Cards",
     "description": "A JSON file containing every card object on Scryfall in English or the printed language if the card is only available in one language.",
-    "compressed_size": 34746834,
-    "download_uri": "https://c2.scryfall.com/file/scryfall-bulk/default-cards/default-cards-20220406090258.json",
+    "compressed_size": 34776335,
+    "download_uri": "https://c2.scryfall.com/file/scryfall-bulk/default-cards/default-cards-20220407090248.json",
     "content_type": "application/json",
     "content_encoding": "gzip"
 }
