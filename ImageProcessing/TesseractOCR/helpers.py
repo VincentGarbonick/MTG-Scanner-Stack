@@ -105,7 +105,7 @@ def imageCropVisual(imageFile, cropVals=CROP_COORDS):
         width = 4
     )
     hash = hashlib.md5(bytes(image.tobytes()))
-    image.save(f"Cropped_{hash.hexdigest()[0:8]}.jpeg")
+    image.save(f"Cropped_{hash.hexdigest()[0:7]}.jpeg")
 
 
 def processImage(imageFile):
@@ -154,6 +154,8 @@ class nameMatch:
         self.matchList = matchList
         if len(matchList) > 0:
            self.matchName = matchList[0]
+        else:
+            self.matchName = ""
         self.ratio = ratio
 
 
