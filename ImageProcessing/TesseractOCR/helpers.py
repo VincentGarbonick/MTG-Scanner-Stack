@@ -7,6 +7,7 @@ import PIL.ImageFilter
 import mysql.connector
 import sys
 import hashlib
+import threading
 from PIL import Image, ImageDraw, ImageColor
 import os
 
@@ -63,24 +64,19 @@ def incrementValue(keyName, valueName = "qty"):
     return 0
 
 
-def imageCropVisual(imageFile, cropVals=CROP_COORDS):
+def imageCropVisual(PILImage, cropVals=CROP_COORDS):
     """
     Creates a image file that has outlined the crop area and saves it to current directory for viewing/testing purposes
 
-    :param imageFile: File of image to be processed
+    :param PILImage: PIL Image object 
     :param cropVals: Crop values used to crop the image
     :return: 0 - success
     """
 
-    try:
-        image = Image.open(imageFile)
-    except Exception as e:
-        print(f"Could not open image file {imageFile} - {e}")
-        return 1
     
     
 #crop = (left, top, right, bottom)
-    draw = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(PILImage)
     # Top line
     draw.line(
         [(cropVals[0], cropVals[1]), (cropVals[2], cropVals[1])],
@@ -105,8 +101,8 @@ def imageCropVisual(imageFile, cropVals=CROP_COORDS):
         fill = 0,
         width = 4
     )
-    hash = hashlib.md5(bytes(image.tobytes()))
-    image.save(f"Cropped_{hash.hexdigest()[0:7]}.jpeg")
+    hash = hashlib.md5(bytes(PILImage.tobytes()))
+    PILImage.save(f"Cropped_{hash.hexdigest()[0:7]}.jpeg")
     return 0
 
 
@@ -126,7 +122,8 @@ def processImage(imageFile):
 
     # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
-    imageCropVisual(imageFile)
+    imageCropVisual(image)
+    imageCropVisual(rotatedCopy)
 
     # Crop the images, convert them to 8 bit black and white, and apply a median filter
     image = image.crop(CROP_COORDS)
