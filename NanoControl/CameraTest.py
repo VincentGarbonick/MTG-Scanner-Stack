@@ -31,8 +31,7 @@ def init():
     GPIO.output(DIR_PIN, GPIO.LOW)
 
 
-
-if __name__ == "__main__":
+def main(threadStop):
     init()
 
     # Custom args for our camera to try and optimize image quality for our environment
@@ -51,6 +50,9 @@ if __name__ == "__main__":
     
     try:
         while True:
+            if threadStop:
+                print("Camera thread stopping")
+                sys.exit(0)
             # Run forward for 1 second
             GPIO.output(DIR_PIN, GPIO.HIGH)
             GPIO.output(ENABLE_PIN, GPIO.HIGH)
@@ -71,9 +73,6 @@ if __name__ == "__main__":
         GPIO.cleanup()
     
 
-
-
-    
-    
-    
+if __name__ == "__main__":
+    main()
 
