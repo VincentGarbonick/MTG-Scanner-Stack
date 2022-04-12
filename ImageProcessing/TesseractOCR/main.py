@@ -38,7 +38,7 @@ if __name__ == "__main__":
     initialize()
     print("Starting camera module...")
     threadStop = False
-    cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop))
+    cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop, ))
     cameraThread.start()
     print("Camera thread started")
 
