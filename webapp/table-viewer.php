@@ -25,7 +25,13 @@
         $("#sidebarImage").attr("src", filePath);
       });
     });
+
+    $(document).ready(function () {
+  $('#dtBasicExample').DataTable();
+  $('.dataTables_length').addClass('bs-select');  
+    });
   </script>
+
   <title>Table Viewer</title>
 </head>
 <body>
@@ -47,9 +53,10 @@
         <img src="./demo-img/demo-img-med/Flickerwisp.jpg" class="center sidebar-image-spec" style="padding-top: 10px;" id="sidebarImage">
     </div>    
     <div class="text-center" style="font-family: 'Raleway', sans-serif;">
+        <!--<input type="text" id="cardSearchBar" onkeyup="searchTable()" placeholder="Search for names..">-->
         <div class="table-wrapper-scroll-y my-custom-scrollbar">
             <!-- TODO: GET FILTER/SEARCH TABLE STUFF, USING EITHER BOOTSTRAP OR SOMETHING ELSE -->
-            <table class="table table-responsive table-bordered table-striped mb-0" style="font-family: 'Raleway', sans-serif">
+            <table id="dtBasicExample" class="table table-responsive table-bordered table-striped mb-0" style="font-family: 'Raleway', sans-serif">
               <thead>
                 <tr>
                   <th class="table-header-text" scope="col">Card Name</th>

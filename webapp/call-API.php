@@ -236,6 +236,9 @@
             $row = mysqli_fetch_array($result);
         } 
         fclose($myFile);
+
+        header("Location: table-viewer.php"); 
+
     }
 
     else 
