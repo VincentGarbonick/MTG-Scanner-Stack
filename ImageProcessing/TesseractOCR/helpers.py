@@ -6,14 +6,23 @@ import pytesseract
 import PIL.ImageFilter
 import mysql.connector
 import sys
-from PIL import Image
+import hashlib
+import threading
+from PIL import Image, ImageDraw, ImageColor
 import os
 
-sqlUser = "root"
-sqlPass = ""
-sqlDB = "magic"
-sqlSock = "/opt/lampp/var/mysql/mysql.sock"
-sqlSock = "/var/run/mysqld/mysqld.sock"
+SQL_USER = "root"
+SQL_PASS = ""
+SQL_DB_NAME = "magic"
+SQL_SOCK_LAMPP = "/opt/lampp/var/mysql/mysql.sock"
+SQL_SOCK = "/var/run/mysqld/mysqld.sock"
+
+
+#crop = (left, top, right, bottom)
+# These values will need to be adjusted to crop the title area depending on our camera
+CROP_COORDS = (342, 291, 800, 350)
+CROP_COORDS = (39, 39, 390, 69)
+CROP_COORDS = (680, 700, 1560, 760)
 
 def connectDatabase():
     """
@@ -22,10 +31,10 @@ def connectDatabase():
     :return: mysql.connector.connection object
     """
     sqlConnection = mysql.connector.connect(
-        user=sqlUser,
-        passwd=sqlPass,
-        db=sqlDB,
-        unix_socket=sqlSock)
+        user=SQL_USER,
+        passwd=SQL_PASS,
+        db=SQL_DB_NAME,
+        unix_socket=SQL_SOCK)
     return sqlConnection
 
 def incrementValue(keyName, valueName = "qty"):
@@ -54,6 +63,49 @@ def incrementValue(keyName, valueName = "qty"):
     connection.close()
     return 0
 
+
+def imageCropVisual(PILImage, cropVals=CROP_COORDS):
+    """
+    Creates a image file that has outlined the crop area and saves it to current directory for viewing/testing purposes
+
+    :param PILImage: PIL Image object 
+    :param cropVals: Crop values used to crop the image
+    :return: 0 - success
+    """
+
+    
+    
+#crop = (left, top, right, bottom)
+    draw = ImageDraw.Draw(PILImage)
+    # Top line
+    draw.line(
+        [(cropVals[0], cropVals[1]), (cropVals[2], cropVals[1])],
+        fill = 0,
+        width = 4
+    )
+    # Bottom line
+    draw.line(
+        [(cropVals[0], cropVals[3]), (cropVals[2], cropVals[3])],
+        fill = 0,
+        width = 4
+    )
+    # Left line
+    draw.line(
+        [(cropVals[0], cropVals[1]), (cropVals[0], cropVals[3])],
+        fill = 0,
+        width = 4
+    )
+    # Right line
+    draw.line(
+        [(cropVals[2], cropVals[1]), (cropVals[2], cropVals[3])],
+        fill = 0,
+        width = 4
+    )
+    hash = hashlib.md5(bytes(PILImage.tobytes()))
+    PILImage.save(f"Cropped_{hash.hexdigest()[0:7]}.jpeg")
+    return 0
+
+
 def processImage(imageFile):
     """
     Creates a copy of image and rotates it. Both images are then cropped, filtered, and returned as a tuple.
@@ -68,20 +120,16 @@ def processImage(imageFile):
         print(f"Could not open image file {imageFile} - {e}")
         return 1
 
-    #crop = (left, top, right, bottom)
-    # These values will need to be adjusted to crop the title area depending on our camera
-    originalCrop = (39, 39, 390, 69)
-    originalCrop = (342, 291, 800, 350)
-
     # Create a copy that is rotated 180 degrees to work for both input cases
     rotatedCopy = image.rotate(180)
+    imageCropVisual(image)
+    imageCropVisual(rotatedCopy)
 
     # Crop the images, convert them to 8 bit black and white, and apply a median filter
-    image = image.crop(originalCrop)
+    image = image.crop(CROP_COORDS)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
-    image.save("Testing.jpeg")
-    rotatedCopy = rotatedCopy.crop(originalCrop)
+    rotatedCopy = rotatedCopy.crop(CROP_COORDS)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
 
@@ -100,7 +148,14 @@ def textFromImage(image):
     return text
 
 
-
+class nameMatch:
+    def __init__(self, matchList, ratio):
+        self.matchList = matchList
+        if len(matchList) > 0:
+            self.matchName = matchList[0]
+        else:
+            self.matchName = ""
+        self.ratio = ratio
 
 
 def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
@@ -124,7 +179,7 @@ def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
     ratio = 0
     if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
-    return (similarList, ratio)
+    return nameMatch(similarList, ratio)
 
 
 def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"):

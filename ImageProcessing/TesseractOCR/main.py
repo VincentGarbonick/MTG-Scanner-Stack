@@ -1,6 +1,9 @@
 
 from helpers import *
 
+sys.path.insert(1, r'../../NanoControl')
+import CameraTest
+
 """
 This will be the main file for handling image processing on the Jetson Nano.
 Images will be acquired from a separate program that will be in control of motor and camera.
@@ -32,7 +35,13 @@ if __name__ == "__main__":
     #print(text)
     #print(getCloseMatches(text))
 
-    #initialize()
+    initialize()
+    print("Starting camera module...")
+    threadStop = False
+    cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop, ))
+    cameraThread.start()
+    print("Camera thread started")
+
     namesList = []
     try:
         with open("cardNames.json", mode="r") as file: 
@@ -41,39 +50,52 @@ if __name__ == "__main__":
         print(f"Could not read cardNames.json - {e}")
         sys.exit(1)
 
-    while True:
-        # Check if there are any files in ImageTemp/ directory
-        if len(os.listdir("ImageTemp")) > 0:
-            *_, (paths, names, files) = os.walk("ImageTemp")
-            modifiedTimes = {}
-            for i in files:
-                modifiedTimes[i] = os.path.getmtime(fr"ImageTemp/{i}")
-            # Get the file with the oldest last modified time
-            oldestFile = max(modifiedTimes, key=modifiedTimes.get)
+    print("Starting image processing")
 
-            # Get cropped and filtered images from the oldest file
-            images = processImage(fr"ImageTemp/{oldestFile}")
-            if images == 1:
-                continue
-            # Perform text recognition on images
-            texts = (textFromImage(images[0]), textFromImage(images[1]))
-            # Find a card name that most closely matches text from images
-            texts = (getCloseMatches(texts[0], namesList), getCloseMatches(texts[1], namesList))
+    try:
+        while True:
+            # Check if there are any files in ImageTemp/ directory
+            if len(os.listdir("ImageTemp")) > 0:
+                *_, (paths, names, files) = os.walk("ImageTemp")
+                modifiedTimes = {}
+                for i in files:
+                    modifiedTimes[i] = os.path.getmtime(fr"ImageTemp/{i}")
+                # Get the file with the oldest last modified time
+                oldestFile = max(modifiedTimes, key=modifiedTimes.get)
 
-            # If no close card name matches are found from the images, remove the image and continue with next file
-            if texts[0][1] == 0 and texts[1][1] == 0:
-                print(f"No matches found for {images} - {texts}")
+                # Get cropped and filtered images from the oldest file
+                images = processImage(fr"ImageTemp/{oldestFile}")
+                if images == 1:
+                    continue
+                originalImage = images[0]
+                rotatedImage = images[1]
+
+                # Perform text recognition on images
+                originalImageText = textFromImage(images[0])
+                rotatedImageText = textFromImage(images[1])
+                # Find a card name that most closely matches text from images
+                originalImageMatch = getCloseMatches(originalImageText, namesList)
+                rotatedImageMatch = getCloseMatches(rotatedImageText, namesList)
+
+                # If no close card name matches are found from the images, remove the image and continue with next file
+                if originalImageMatch.ratio == 0 and rotatedImageMatch.ratio == 0:
+                    print(f"No matches found for {images} - [{originalImageText}, {rotatedImageText}]")
+                    os.remove(fr"ImageTemp/{oldestFile}")
+                    continue
+
+                # Determine which name has the closest match
+                if originalImageMatch.ratio > rotatedImageMatch.ratio:
+                    text = originalImageMatch.matchName
+                else:
+                    text = rotatedImageMatch.matchName
+
+                # 'text' variable now contains the closest matching card name from the picture.
+                print(f"Got card name match {text}")
+                incrementValue(text)
+                print(fr"Removing {oldestFile}")
                 os.remove(fr"ImageTemp/{oldestFile}")
-                continue
+    except KeyboardInterrupt:
+        print("Stopping camera thread...")
+        threadStop = True
+        cameraThread.join(timeout=5)
 
-            # Determine which name has the closest match
-            if texts[0][1] > texts[1][1]:
-                text = texts[0][0][0]
-            else:
-                text = texts[1][0][0]
-
-            # 'text' variable now contains the closest matching card name from the picture.
-            print(f"Got card name match {text}")
-            incrementValue(text)
-            print(fr"Removing {oldestFile}")
-            os.remove(fr"ImageTemp/{oldestFile}")
