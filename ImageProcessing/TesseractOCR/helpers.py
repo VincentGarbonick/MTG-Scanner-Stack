@@ -9,7 +9,8 @@ import sys
 import hashlib
 import threading
 import time
-from PIL import Image, ImageDraw, ImageColor, ImageEnhance
+import tempfile
+from PIL import Image, ImageDraw, ImageColor, ImageEnhance, ImageOps
 import os
 
 SQL_USER = "root"
@@ -109,7 +110,7 @@ def imageCropVisual(PILImage, cropVals=ORIGINAL_CROP):
     return 0
 
 
-def processImage(imageFile):
+def processImage(imageFile, crop1, crop2, returnVals, index):
     """
     Creates a copy of image and rotates it. Both images are then cropped, filtered, and returned as a tuple.
     The first image in the tuple is the original image, the second is the rotated image.
@@ -131,23 +132,36 @@ def processImage(imageFile):
     imageCropVisual(image, cropVals = ORIGINAL_CROP)
     imageCropVisual(rotatedCopy, cropVals = ROTATED_CROP)
 
-    # Crop the images, convert them to 8 bit black and white, and apply a median filter
-    image = image.crop(ORIGINAL_CROP)
-    image = image.convert('L')
-    image = image.filter(PIL.ImageFilter.MedianFilter())
-    enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.5)
-    image.save("UPRIGHT PROCESSED.jpg")
-    rotatedCopy = rotatedCopy.crop(ROTATED_CROP)
-    rotatedCopy = rotatedCopy.convert('L')
-    rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
-    enhancer = ImageEnhance.Contrast(rotatedCopy)
-    rotatedCopy = enhancer.enhance(1.5)
-    rotatedCopy.save("ROTATED PROCESSED.jpg")
+    border = (10, 10, 10, 10)
+        
+    imageUpright = image.crop(crop1)
+    width, height = imageUpright.size
+    newSize = (width * 2, height * 2)
+    imageUpright = imageUpright.resize(newSize, PIL.Image.BILINEAR)
+    imageUpright = PIL.ImageOps.expand(imageUpright, border=border, fill=0)
+    enhancer = ImageEnhance.Contrast(imageUpright)
+    imageUpright = enhancer.enhance(4)
+    imageUpright = imageUpright.convert('L')
+    imageUpright = imageUpright.filter(PIL.ImageFilter.UnsharpMask(10, 200, 2))
 
-    return image, rotatedCopy
+    imageUpright.save("UPRIGHT PROCESSED.jpg")
 
-def textFromImage(image):
+    rotatedImage = image.crop(crop2)
+    width, height = rotatedImage.size
+    newSize = (width * 2, height * 2)
+    rotatedImage = rotatedImage.resize(newSize, PIL.Image.BILINEAR)
+    rotatedImage = PIL.ImageOps.expand(rotatedImage, border=border, fill=0)
+    enhancer = ImageEnhance.Contrast(rotatedImage)
+    rotatedImage = enhancer.enhance(4)
+    rotatedImage = rotatedImage.convert('L')
+    rotatedImage = rotatedImage.filter(PIL.ImageFilter.UnsharpMask(10, 200, 2))
+
+    rotatedImage.save("ROTATED PROCESSED.jpg")
+
+    returnVals[index] = (imageUpright, rotatedCopy)
+    return 0
+
+def textFromImage(image, index, returnVals):
     """
     Uses tesseract to convert an image to string
 
@@ -157,7 +171,7 @@ def textFromImage(image):
     text = pytesseract.image_to_string(image)
     text = text.split('\n')[0]
     print(f"Text from image: [{text}]")
-    return text
+    returnVals[index] = text
 
 
 class nameMatch:
@@ -170,7 +184,7 @@ class nameMatch:
         self.ratio = ratio
 
 
-def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
+def getCloseMatches(cardName, namesList, index, returnVals, cutoff=0.6, num=1):
     """
     Gets the closest match(s) to cardName from the list of all names in cardNames.json
 
@@ -191,7 +205,7 @@ def getCloseMatches(cardName, namesList, cutoff=0.6, num=1):
     ratio = 0
     if num == 1 and len(similarList) > 0:
         ratio = difflib.SequenceMatcher(None, similarList[0], cardName).ratio()
-    return nameMatch(similarList, ratio)
+    returnVals[index] = nameMatch(similarList, ratio)
 
 
 def generateCardNames(cardsJson = "defaultCards.json", output = "cardNames.json"):

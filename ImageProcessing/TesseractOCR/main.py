@@ -2,7 +2,7 @@
 from helpers import *
 
 sys.path.insert(1, r'../../NanoControl')
-import CameraTest
+#import CameraTest
 
 """
 This will be the main file for handling image processing on the Jetson Nano.
@@ -38,8 +38,8 @@ if __name__ == "__main__":
     initialize()
     print("Starting camera module...")
     threadStop = False
-    cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop, ))
-    cameraThread.start()
+    #cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop, ))
+    #cameraThread.start()
     print("Camera thread started")
 
     namesList = []
@@ -64,7 +64,74 @@ if __name__ == "__main__":
                 oldestFile = max(modifiedTimes, key=modifiedTimes.get)
 
                 # Get cropped and filtered images from the oldest file
-                images = processImage(fr"ImageTemp/{oldestFile}")
+                crops1 = [(1505, 390, 1910, 465), (1505, 410, 1910, 485), (1505, 430, 1910, 505)]
+                crops2 = [(1280, 540, 1760, 620), (1280, 560, 1760, 640), (1280, 580, 1760, 660)]
+                
+                parallelProcessThreads = []
+                imageResults = [0] * len(crops1)
+                for i, (c1, c2) in enumerate(zip(crops1, crops2)):
+                    newThread = threading.Thread(target=processImage, args=(fr"ImageTemp/{oldestFile}", c1, c2, imageResults, i))
+                    parallelProcessThreads.append(newThread)
+                
+                print("Running image process threads.")
+                for i in parallelProcessThreads:
+                    i.start()
+                for i in parallelProcessThreads:
+                    i.join()
+                parallelProcessThreads.clear()
+
+
+                originalImages = []
+                rotatedImages = []
+                for i in imageResults:
+                    originalImages.append(i[0])
+                    rotatedImages.append(i[1])
+                
+                originalTexts = [0] * len(crops1)
+                rotatedTexts = [0] * len(crops1)
+
+                for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
+                    newThreadOriginal = threading.Thread(target=textFromImage, args=(original, i, originalTexts))
+                    newThreadRotated = threading.Thread(target=textFromImage, args=(rotated, i, rotatedTexts))
+                    parallelProcessThreads.append(newThreadOriginal)
+                    parallelProcessThreads.append(newThreadRotated)
+
+                print("Starting text from image threads.")
+                for i in parallelProcessThreads:
+                    i.start()
+                for i in parallelProcessThreads:
+                    i.join()
+                parallelProcessThreads.clear()
+                
+                originalMatches = [0] * len(crops1)
+                rotatedMatches = [0] * len(crops1)
+                for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
+                    newThreadOriginal = threading.Thread(target=getCloseMatches, args=(originalTexts[i], namesList, i, originalMatches))
+                    newThreadRotated = threading.Thread(target=getCloseMatches, args=(rotatedTexts[i], namesList, i, rotatedMatches))
+                    parallelProcessThreads.append(newThreadOriginal)
+                    parallelProcessThreads.append(newThreadRotated)
+                
+                print("Starting match threads.")
+                for i in parallelProcessThreads:
+                    i.start()
+                for i in parallelProcessThreads:
+                    i.join()
+
+                
+                bestOriginalMatch = nameMatch([], 0)
+                bestRotatedMatch = nameMatch([], 0)
+
+                for _originalMatches, _rotatedMatches in zip(originalMatches, rotatedMatches):
+                    if _originalMatches.ratio > bestOriginalMatch.ratio:
+                        bestOriginalMatch = _originalMatches
+                    if _rotatedMatches.ratio > bestRotatedMatch.ratio:
+                        bestRotatedMatch = _rotatedMatches
+                
+                print(bestOriginalMatch.matchList, bestOriginalMatch.ratio)
+                print(bestRotatedMatch.matchList, bestRotatedMatch.ratio)
+                
+                
+                """
                 if images == 1:
                     continue
                 originalImage = images[0]
@@ -80,7 +147,7 @@ if __name__ == "__main__":
                 # If no close card name matches are found from the images, remove the image and continue with next file
                 if originalImageMatch.ratio == 0 and rotatedImageMatch.ratio == 0:
                     print(f"No matches found for {images} - [{originalImageText}, {rotatedImageText}]")
-                    os.remove(fr"ImageTemp/{oldestFile}")
+                    #os.remove(fr"ImageTemp/{oldestFile}")
                     continue
 
                 # Determine which name has the closest match
@@ -93,7 +160,26 @@ if __name__ == "__main__":
                 print(f"Got card name match {text}")
                 incrementValue(text)
                 print(fr"Removing {oldestFile}")
-                os.remove(fr"ImageTemp/{oldestFile}")
+                #os.remove(fr"ImageTemp/{oldestFile}")
+                """
+
+                if bestOriginalMatch.ratio == 0 and bestRotatedMatch.ratio == 0:
+                    print(f"No matches found for ImageTemp/{oldestFile} - [{bestOriginalMatch.matchList}, {bestRotatedMatch.matchList}]")
+                    #os.remove(fr"ImageTemp/{oldestFile}")
+                    continue
+                    
+                if bestOriginalMatch.ratio > bestRotatedMatch.ratio:
+                    finalText = bestOriginalMatch.matchName
+                else:
+                    finalText = bestRotatedMatch.matchName
+                print(f"Got card name match {finalText}")
+                incrementValue(finalText)
+                print(fr"Removing ImageTemp/{oldestFile}")
+                #os.remove(fr"ImageTemp/{oldestFile}")
+            else:
+                time.sleep(0.1)
+
+
     except KeyboardInterrupt:
         print("Stopping camera thread...")
         threadStop = True
