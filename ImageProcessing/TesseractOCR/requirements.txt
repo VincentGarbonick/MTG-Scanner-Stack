@@ -5,4 +5,5 @@ mysql~=0.0.3
 mysql-connector~=2.2.9
 traitlets~=5.1.1
 opencv-python~=4.5.5.64
+numpy~=1.22.3
 Jetson.GPIO~=2.0.18
