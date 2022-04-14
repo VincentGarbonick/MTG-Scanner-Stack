@@ -8,7 +8,8 @@ import mysql.connector
 import sys
 import hashlib
 import threading
-from PIL import Image, ImageDraw, ImageColor
+import time
+from PIL import Image, ImageDraw, ImageColor, ImageEnhance
 import os
 
 SQL_USER = "root"
@@ -23,6 +24,8 @@ SQL_SOCK = "/var/run/mysqld/mysqld.sock"
 CROP_COORDS = (342, 291, 800, 350)
 CROP_COORDS = (39, 39, 390, 69)
 CROP_COORDS = (680, 700, 1560, 760)
+ORIGINAL_CROP = (1505, 410, 1910, 485)
+ROTATED_CROP = (1280, 560, 1760, 640)
 
 def connectDatabase():
     """
@@ -64,7 +67,7 @@ def incrementValue(keyName, valueName = "qty"):
     return 0
 
 
-def imageCropVisual(PILImage, cropVals=CROP_COORDS):
+def imageCropVisual(PILImage, cropVals=ORIGINAL_CROP):
     """
     Creates a image file that has outlined the crop area and saves it to current directory for viewing/testing purposes
 
@@ -116,22 +119,31 @@ def processImage(imageFile):
     """
     try:
         image = Image.open(imageFile)
+        rotatedCopy = Image.open(imageFile)
     except Exception as e:
         print(f"Could not open image file {imageFile} - {e}")
         return 1
 
     # Create a copy that is rotated 180 degrees to work for both input cases
-    rotatedCopy = image.rotate(180)
-    imageCropVisual(image)
-    imageCropVisual(rotatedCopy)
+    image = image.rotate(90)
+    rotatedCopy = rotatedCopy.rotate(90)
+    rotatedCopy = rotatedCopy.rotate(180)
+    imageCropVisual(image, cropVals = ORIGINAL_CROP)
+    imageCropVisual(rotatedCopy, cropVals = ROTATED_CROP)
 
     # Crop the images, convert them to 8 bit black and white, and apply a median filter
-    image = image.crop(CROP_COORDS)
+    image = image.crop(ORIGINAL_CROP)
     image = image.convert('L')
     image = image.filter(PIL.ImageFilter.MedianFilter())
-    rotatedCopy = rotatedCopy.crop(CROP_COORDS)
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(1.5)
+    image.save("UPRIGHT PROCESSED.jpg")
+    rotatedCopy = rotatedCopy.crop(ROTATED_CROP)
     rotatedCopy = rotatedCopy.convert('L')
     rotatedCopy = rotatedCopy.filter(PIL.ImageFilter.MedianFilter())
+    enhancer = ImageEnhance.Contrast(rotatedCopy)
+    rotatedCopy = enhancer.enhance(1.5)
+    rotatedCopy.save("ROTATED PROCESSED.jpg")
 
     return image, rotatedCopy
 
