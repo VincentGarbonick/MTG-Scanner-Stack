@@ -129,8 +129,8 @@ def processImage(imageFile, crop1, crop2, returnVals, index):
     image = image.rotate(90)
     rotatedCopy = rotatedCopy.rotate(90)
     rotatedCopy = rotatedCopy.rotate(180)
-    imageCropVisual(image, cropVals = ORIGINAL_CROP)
-    imageCropVisual(rotatedCopy, cropVals = ROTATED_CROP)
+    imageCropVisual(image, cropVals = crop1)
+    imageCropVisual(rotatedCopy, cropVals = crop2)
 
     border = (10, 10, 10, 10)
         
