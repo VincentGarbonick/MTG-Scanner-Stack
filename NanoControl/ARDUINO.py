@@ -3,17 +3,16 @@ from jetcam.csi_camera import *
 from PIL import Image
 import time, hashlib, sys
 
-PIN_1 = 29
-PIN_2 = 31
-PIN_3 = 33
-PIN_4 = 35
+PIN_1 = 29 #in 1a 
+PIN_2 = 31 #in 2a 
+PIN_3 = 33 #in 1b 
+PIN_4 = 35 #in 2b 
 
 cameraReady = False
 
 def cameraCallback(change):
     global cameraReady
     newImage = change["new"]
-    
     hash = hashlib.md5(bytes(newImage))
     #print(hash.hexdigest())
 
@@ -76,9 +75,16 @@ def main(threadStop):
                     cleanup(cam)
                 time.sleep(0.1)
 
+
+            time.sleep(1)
             GPIO.output(PIN_1, GPIO.HIGH)
             GPIO.output(PIN_2, GPIO.HIGH) # braking again
+
+            GPIO.output(PIN_3, GPIO.LOW) 
+            GPIO.output(PIN_4, GPIO.HIGH) # motor two going forward
             time.sleep(1)
+            GPIO.output(PIN_3, GPIO.LOW) # motor two low braking 
+            GPIO.output(PIN_4, GPIO.LOW)
     except KeyboardInterrupt:
         cleanup(cam)
 
