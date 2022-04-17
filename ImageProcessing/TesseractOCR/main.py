@@ -52,6 +52,9 @@ if __name__ == "__main__":
 
     print("Starting image processing")
 
+    # Check how many unrecognized images already exist as to not overwrite any existing images
+    unrecognizedImageTotal = len(os.listdir("UnrecognizedImages"))
+
     try:
         while True:
             # Check if there are any files in ImageTemp/ directory
@@ -167,6 +170,12 @@ if __name__ == "__main__":
 
                 if bestOriginalMatch.ratio == 0 and bestRotatedMatch.ratio == 0:
                     print(f"No matches found for ImageTemp/{oldestFile} - [{bestOriginalMatch.matchList}, {bestRotatedMatch.matchList}]")
+                    
+                    # Save unrecognized image in the UnrecognizedImages directory with the next lowest index
+                    unrecognizedImageTotal += 1
+                    print(f"Saving Image as UnrecognizedImages/Unrecognized_Image_{unrecognizedImageTotal}")
+                    tempImage = Image.open(fr"ImageTemp/{oldestFile}")
+                    tempImage.save(f"UnrecognizedImages/Unrecognized_Image_{unrecognizedImageTotal}.jpg")
                     os.remove(fr"ImageTemp/{oldestFile}")
                     continue
                     
