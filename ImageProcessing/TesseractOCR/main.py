@@ -1,8 +1,8 @@
 
 from helpers import *
 
-sys.path.insert(1, r'../../NanoControl')
-#import CameraTest
+
+import ARDUINO
 
 """
 This will be the main file for handling image processing on the Jetson Nano.
@@ -35,10 +35,10 @@ if __name__ == "__main__":
     #print(text)
     #print(getCloseMatches(text))
 
-    initialize()
+    #initialize()
     print("Starting camera module...")
     threadStop = False
-    #cameraThread = threading.Thread(target=CameraTest.main, args = (lambda : threadStop, ))
+    cameraThread = threading.Thread(target=ARDUINO.main, args = (lambda : threadStop, ))
     #cameraThread.start()
     print("Camera thread started")
 
@@ -63,10 +63,11 @@ if __name__ == "__main__":
                 # Get the file with the oldest last modified time
                 oldestFile = max(modifiedTimes, key=modifiedTimes.get)
 
-                # Get cropped and filtered images from the oldest file
-                crops1 = [(1505, 390, 1910, 465), (1505, 410, 1910, 485), (1505, 430, 1910, 505)]
-                crops2 = [(1280, 540, 1760, 620), (1280, 560, 1760, 640), (1280, 580, 1760, 660)]
-                
+                #crop = (left, top, right, bottom)
+                crops1 = [(1100, 805, 1900, 840), (1100, 820, 1900, 855), (1100, 835, 1900, 870)]
+                crops2 = [(1170, 800, 2000, 845), (1170, 815, 2000, 860), (1170, 830, 2000, 875)]
+
+
                 parallelProcessThreads = []
                 imageResults = [0] * len(crops1)
                 for i, (c1, c2) in enumerate(zip(crops1, crops2)):
@@ -80,6 +81,7 @@ if __name__ == "__main__":
                     i.join()
                 parallelProcessThreads.clear()
 
+                #sys.exit(0)
 
                 originalImages = []
                 rotatedImages = []
@@ -88,7 +90,7 @@ if __name__ == "__main__":
                     rotatedImages.append(i[1])
                 
                 originalTexts = [0] * len(crops1)
-                rotatedTexts = [0] * len(crops1)
+                rotatedTexts = [0] * len(crops2)
 
                 for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
                     newThreadOriginal = threading.Thread(target=textFromImage, args=(original, i, originalTexts))
@@ -104,7 +106,7 @@ if __name__ == "__main__":
                 parallelProcessThreads.clear()
                 
                 originalMatches = [0] * len(crops1)
-                rotatedMatches = [0] * len(crops1)
+                rotatedMatches = [0] * len(crops2)
                 for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
                     newThreadOriginal = threading.Thread(target=getCloseMatches, args=(originalTexts[i], namesList, i, originalMatches))
                     newThreadRotated = threading.Thread(target=getCloseMatches, args=(rotatedTexts[i], namesList, i, rotatedMatches))
@@ -165,7 +167,7 @@ if __name__ == "__main__":
 
                 if bestOriginalMatch.ratio == 0 and bestRotatedMatch.ratio == 0:
                     print(f"No matches found for ImageTemp/{oldestFile} - [{bestOriginalMatch.matchList}, {bestRotatedMatch.matchList}]")
-                    #os.remove(fr"ImageTemp/{oldestFile}")
+                    os.remove(fr"ImageTemp/{oldestFile}")
                     continue
                     
                 if bestOriginalMatch.ratio > bestRotatedMatch.ratio:
@@ -175,7 +177,7 @@ if __name__ == "__main__":
                 print(f"Got card name match {finalText}")
                 incrementValue(finalText)
                 print(fr"Removing ImageTemp/{oldestFile}")
-                #os.remove(fr"ImageTemp/{oldestFile}")
+                os.remove(fr"ImageTemp/{oldestFile}")
             else:
                 time.sleep(0.1)
 
