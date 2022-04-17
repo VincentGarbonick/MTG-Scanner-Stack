@@ -1,8 +1,6 @@
 
 from helpers import *
-
-
-import ARDUINO
+import ScanCards
 
 """
 This will be the main file for handling image processing on the Jetson Nano.
@@ -29,18 +27,19 @@ def initialize():
 
 
 if __name__ == "__main__":
-    #print(getCloseMatches("Word Brer"))
-    #images = processImage(r"ImageTemp/Fury Sliver Rotated.jpeg")
-    #text = textFromImage(images[1])
-    #print(text)
-    #print(getCloseMatches(text))
+    
+    # print(getCloseMatches("Word Brer"))
+    # images = processImage(r"ImageTemp/Fury Sliver Rotated.jpeg")
+    # text = textFromImage(images[1])
+    # print(text)
+    # print(getCloseMatches(text))
 
-    #initialize()
-    print("Starting camera module...")
-    threadStop = False
-    cameraThread = threading.Thread(target=ARDUINO.main, args = (lambda : threadStop, ))
-    #cameraThread.start()
-    print("Camera thread started")
+    # initialize()
+    # print("Starting camera module...")
+    # threadStop = False
+    # cameraThread = threading.Thread(target=ARDUINO.main, args = (lambda : threadStop, ))
+    # cameraThread.start()
+    # print("Camera thread started")
 
     namesList = []
     try:
@@ -50,19 +49,21 @@ if __name__ == "__main__":
         print(f"Could not read cardNames.json - {e}")
         sys.exit(1)
 
-    print("Starting image processing")
+    print("Starting Image Processing")
 
     # Check how many unrecognized images already exist as to not overwrite any existing images
     unrecognizedImageTotal = len(os.listdir("UnrecognizedImages"))
 
     try:
         while True:
+
             # Check if there are any files in ImageTemp/ directory
             if len(os.listdir("ImageTemp")) > 0:
                 *_, (paths, names, files) = os.walk("ImageTemp")
                 modifiedTimes = {}
                 for i in files:
                     modifiedTimes[i] = os.path.getmtime(fr"ImageTemp/{i}")
+
                 # Get the file with the oldest last modified time
                 oldestFile = max(modifiedTimes, key=modifiedTimes.get)
 
@@ -70,21 +71,19 @@ if __name__ == "__main__":
                 crops1 = [(1100, 805, 1900, 840), (1100, 820, 1900, 855), (1100, 835, 1900, 870)]
                 crops2 = [(1170, 800, 2000, 845), (1170, 815, 2000, 860), (1170, 830, 2000, 875)]
 
-
                 parallelProcessThreads = []
                 imageResults = [0] * len(crops1)
                 for i, (c1, c2) in enumerate(zip(crops1, crops2)):
                     newThread = threading.Thread(target=processImage, args=(fr"ImageTemp/{oldestFile}", c1, c2, imageResults, i))
                     parallelProcessThreads.append(newThread)
                 
-                print("Running image process threads.")
+                print("\nRunning Parallel Image Processing Threads")
                 for i in parallelProcessThreads:
                     i.start()
                 for i in parallelProcessThreads:
                     i.join()
                 parallelProcessThreads.clear()
-
-                #sys.exit(0)
+                print("Done")
 
                 originalImages = []
                 rotatedImages = []
@@ -101,12 +100,13 @@ if __name__ == "__main__":
                     parallelProcessThreads.append(newThreadOriginal)
                     parallelProcessThreads.append(newThreadRotated)
 
-                print("Starting text from image threads.")
+                print("\nStarting Parallel Text Recognition Threads")
                 for i in parallelProcessThreads:
                     i.start()
                 for i in parallelProcessThreads:
                     i.join()
                 parallelProcessThreads.clear()
+                print("Done")
                 
                 originalMatches = [0] * len(crops1)
                 rotatedMatches = [0] * len(crops2)
@@ -116,13 +116,12 @@ if __name__ == "__main__":
                     parallelProcessThreads.append(newThreadOriginal)
                     parallelProcessThreads.append(newThreadRotated)
                 
-                print("Starting match threads.")
+                print("\nStarting Parallel Text Matching Threads")
                 for i in parallelProcessThreads:
                     i.start()
                 for i in parallelProcessThreads:
                     i.join()
 
-                
                 bestOriginalMatch = nameMatch([], 0)
                 bestRotatedMatch = nameMatch([], 0)
 
@@ -131,10 +130,10 @@ if __name__ == "__main__":
                         bestOriginalMatch = _originalMatches
                     if _rotatedMatches.ratio > bestRotatedMatch.ratio:
                         bestRotatedMatch = _rotatedMatches
+                print("Done\n")
                 
                 print(bestOriginalMatch.matchList, bestOriginalMatch.ratio)
                 print(bestRotatedMatch.matchList, bestRotatedMatch.ratio)
-                
                 
                 """
                 if images == 1:
@@ -169,10 +168,10 @@ if __name__ == "__main__":
                 """
 
                 if bestOriginalMatch.ratio == 0 and bestRotatedMatch.ratio == 0:
-                    print(f"No matches found for ImageTemp/{oldestFile} - [{bestOriginalMatch.matchList}, {bestRotatedMatch.matchList}]")
                     
                     # Save unrecognized image in the UnrecognizedImages directory with the next lowest index
                     unrecognizedImageTotal += 1
+                    print(f"/nNo matches found for ImageTemp/{oldestFile} - [{bestOriginalMatch.matchList}, {bestRotatedMatch.matchList}]")
                     print(f"Saving Image as UnrecognizedImages/Unrecognized_Image_{unrecognizedImageTotal}")
                     tempImage = Image.open(fr"ImageTemp/{oldestFile}")
                     tempImage.save(f"UnrecognizedImages/Unrecognized_Image_{unrecognizedImageTotal}.jpg")
@@ -183,16 +182,21 @@ if __name__ == "__main__":
                     finalText = bestOriginalMatch.matchName
                 else:
                     finalText = bestRotatedMatch.matchName
-                print(f"Got card name match {finalText}")
+
+                print(f"\nGot card name match {finalText}")
                 incrementValue(finalText)
                 print(fr"Removing ImageTemp/{oldestFile}")
                 os.remove(fr"ImageTemp/{oldestFile}")
+
             else:
                 time.sleep(0.1)
 
 
     except KeyboardInterrupt:
-        print("Stopping camera thread...")
-        threadStop = True
-        cameraThread.join(timeout=5)
+        
+        print("\nStopping program")
+
+        # print("Stopping camera thread...")
+        # threadStop = True
+        # cameraThread.join(timeout=5)
 
