@@ -23,14 +23,6 @@ SQL_SOCK_LAMPP = "/opt/lampp/var/mysql/mysql.sock"
 SQL_SOCK = "/var/run/mysqld/mysqld.sock"
 
 
-#crop = (left, top, right, bottom)
-# These values will need to be adjusted to crop the title area depending on our camera
-CROP_COORDS = (342, 291, 800, 350)
-CROP_COORDS = (39, 39, 390, 69)
-CROP_COORDS = (680, 700, 1560, 760)
-ORIGINAL_CROP = (1505, 410, 1910, 485)
-ROTATED_CROP = (1280, 560, 1760, 640)
-
 def connectDatabase():
     """
     Connects to the MySQL database
@@ -119,68 +111,39 @@ def processImage(imageFile, crop1, crop2, returnVals, index):
     The first image in the tuple is the original image, the second is the rotated image.
 
     :param imageFile: File of image to be processed
-    :return: Returns 2 images that have been processed and should be ready for character recognition
+    :param crop1: Crop areas for upright card images
+    :param crop2: Crop areas for flipped card images
+    :param returnVals: List of return values for each thread when joined.
+    :param index: Thread index used for returnVals
+    :return: A tuple of two card images are stored in returnVals at the current thread index.
+        returns 0 on success. 
     """
     try:
-        #image = cv2.imread(imageFile, cv2.IMREAD_GRAYSCALE)
         image = Image.open(imageFile)
-        #rotatedCopy = cv2.imread(imageFile, cv2.IMREAD_GRAYSCALE)
     except Exception as e:
         print(f"Could not open image file {imageFile} - {e}")
         return 1
 
     # Create a copy that is rotated 180 degrees to work for both input cases
-    #image = image.rotate(90)
     rotatedCopy = image.copy()
     rotatedCopy = rotatedCopy.rotate(180)
-    #rotatedCopy = cv2.rotate(rotatedCopy, cv2.ROTATE_180)
-    #imageCropVisual(image, cropVals = crop1)
-    #imageCropVisual(rotatedCopy, cropVals = crop2)
-
-    #image = image[crop1[1]:crop1[3], crop1[0]:crop1[2]]
-    #image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    #rotatedCopy = rotatedCopy[crop2[1]:crop2[3], crop2[0]:crop2[2]]
-    #rotatedCopy = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-
-    """
-    cv2OriginalImage = image
-    cv2RotatedImage = rotatedCopy
-
-    retOriginal, threshOriginal = cv2.threshold(cv2OriginalImage, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-    retRotated, threshRotated = cv2.threshold(cv2RotatedImage, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-
-    rectKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 50))
-
-    dilationOriginal = cv2.dilate(threshOriginal, rectKernel, iterations = 1)
-    dilationRotated = cv2.dilate(threshRotated, rectKernel, iterations = 1)
-
-    contourOriginal, hierarchyOriginal = cv2.findContours(dilationOriginal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    contourRotated, hierarchyRotated = cv2.findContours(dilationRotated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
-    originalText = []
-    for conts in contourOriginal:
-        x, y, w, h = cv2.boundingRect(conts)
-        rect = cv2.rectangle(cv2OriginalImage,
-            (x, y),
-            (x + w, y + h),
-            (0, 255, 0), 
-            2
-        )
-        cntCrop = cv2OriginalImage[y:y + h, x:x + w]
-        text = pytesseract.image_to_string(cntCrop)
-        originalText.append(text)
-        print(text)
-    print(originalText)
-    """
-        
+    
+    # Crop the image to the given area of interest
     imageUpright = image.crop(crop1)
+
+    # Increase the image contrast by 180%
     enhancer = ImageEnhance.Contrast(imageUpright)
     imageUpright = enhancer.enhance(1.8)
+
+    # Convert image to 8bit black and white
     imageUpright = imageUpright.convert('L')
+
+    # Apply a median filter
     imageUpright = imageUpright.filter(PIL.ImageFilter.MedianFilter())
 
     imageUpright.save(f"UPRIGHT PROCESSED{index}.jpg")
 
+    # Repeat process for rotated image
     rotatedImage = rotatedCopy.crop(crop2)
     enhancer = ImageEnhance.Contrast(rotatedImage)
     rotatedImage = enhancer.enhance(1.8)
@@ -198,7 +161,9 @@ def textFromImage(image, index, returnVals):
     Uses tesseract to convert an image to string
 
     :param image: Image file to convert to string
-    :return: text recovered from the image
+    :param index: Thread index used for returnVals
+    :param returnVals: List of return values for each thread when joined.
+    :return: Text recovered from image is stored in returnVals at the current thread index.
     """
     text = pytesseract.image_to_string(image)
     text = text.split('\n')
@@ -223,10 +188,11 @@ def getCloseMatches(cardName, namesList, index, returnVals, cutoff=0.6, num=1):
 
     :param cardName: The card name string to find a match of
     :param namesList: A list containing all possible names
+    :param index: Thread index used for returnVals
+    :param returnVals: List of return values for each thread when joined.
     :param cutoff: 0-1 float that defines the lowest "closeness" ratio acceptable
     :param num: Number of matches to return
-    :return: Returns a tuple containing a (len(possibilities) list of matches, and ratio float of match closeness)
-             If ratio is 0, no matches were found.
+    :return: A nameMatch object is stored in returnVals at the current thread index.
     """
     try:
         with open("cardNames.json", mode="r") as file: 

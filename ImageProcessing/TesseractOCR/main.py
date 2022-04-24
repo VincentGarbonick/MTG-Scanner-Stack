@@ -27,17 +27,15 @@ def initialize():
 
 
 if __name__ == "__main__":
-    
-    # print(getCloseMatches("Word Brer"))
-    # images = processImage(r"ImageTemp/Fury Sliver Rotated.jpeg")
-    # text = textFromImage(images[1])
-    # print(text)
-    # print(getCloseMatches(text))
-
     # initialize()
+
+    """
+    This would be running ScanCards.py in a separate thread, but the Jetson Nano seems to have trouble
+    running both at the same time.
+    """
     # print("Starting camera module...")
     # threadStop = False
-    # cameraThread = threading.Thread(target=ARDUINO.main, args = (lambda : threadStop, ))
+    # cameraThread = threading.Thread(target=ScanCards.main, args = (lambda : threadStop, ))
     # cameraThread.start()
     # print("Camera thread started")
 
@@ -68,9 +66,11 @@ if __name__ == "__main__":
                 oldestFile = max(modifiedTimes, key=modifiedTimes.get)
 
                 #crop = (left, top, right, bottom)
+                # crops1 and crops 2 are a list of crop values for upright and rotated cards
                 crops1 = [(1100, 805, 1900, 840), (1100, 820, 1900, 855), (1100, 835, 1900, 870)]
                 crops2 = [(1170, 800, 2000, 845), (1170, 815, 2000, 860), (1170, 830, 2000, 875)]
 
+                # Spawn threads to process image for each crop area
                 parallelProcessThreads = []
                 imageResults = [0] * len(crops1)
                 for i, (c1, c2) in enumerate(zip(crops1, crops2)):
@@ -91,9 +91,9 @@ if __name__ == "__main__":
                     originalImages.append(i[0])
                     rotatedImages.append(i[1])
                 
+                # Spawn threads to get any recognized text from all process images
                 originalTexts = [0] * len(crops1)
                 rotatedTexts = [0] * len(crops2)
-
                 for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
                     newThreadOriginal = threading.Thread(target=textFromImage, args=(original, i, originalTexts))
                     newThreadRotated = threading.Thread(target=textFromImage, args=(rotated, i, rotatedTexts))
@@ -108,6 +108,8 @@ if __name__ == "__main__":
                 parallelProcessThreads.clear()
                 print("Done")
                 
+
+                # Spawn threads to find card name matches for all recognized text
                 originalMatches = [0] * len(crops1)
                 rotatedMatches = [0] * len(crops2)
                 for i, (original, rotated) in enumerate(zip(originalImages, rotatedImages)):
@@ -122,6 +124,7 @@ if __name__ == "__main__":
                 for i in parallelProcessThreads:
                     i.join()
 
+                # Find the match with the highest ratio for both the original and rotated images
                 bestOriginalMatch = nameMatch([], 0)
                 bestRotatedMatch = nameMatch([], 0)
 
@@ -134,38 +137,6 @@ if __name__ == "__main__":
                 
                 print(bestOriginalMatch.matchList, bestOriginalMatch.ratio)
                 print(bestRotatedMatch.matchList, bestRotatedMatch.ratio)
-                
-                """
-                if images == 1:
-                    continue
-                originalImage = images[0]
-                rotatedImage = images[1]
-
-                # Perform text recognition on images
-                originalImageText = textFromImage(images[0])
-                rotatedImageText = textFromImage(images[1])
-                # Find a card name that most closely matches text from images
-                originalImageMatch = getCloseMatches(originalImageText, namesList)
-                rotatedImageMatch = getCloseMatches(rotatedImageText, namesList)
-
-                # If no close card name matches are found from the images, remove the image and continue with next file
-                if originalImageMatch.ratio == 0 and rotatedImageMatch.ratio == 0:
-                    print(f"No matches found for {images} - [{originalImageText}, {rotatedImageText}]")
-                    #os.remove(fr"ImageTemp/{oldestFile}")
-                    continue
-
-                # Determine which name has the closest match
-                if originalImageMatch.ratio > rotatedImageMatch.ratio:
-                    text = originalImageMatch.matchName
-                else:
-                    text = rotatedImageMatch.matchName
-
-                # 'text' variable now contains the closest matching card name from the picture.
-                print(f"Got card name match {text}")
-                incrementValue(text)
-                print(fr"Removing {oldestFile}")
-                #os.remove(fr"ImageTemp/{oldestFile}")
-                """
 
                 if bestOriginalMatch.ratio == 0 and bestRotatedMatch.ratio == 0:
                     
@@ -177,14 +148,18 @@ if __name__ == "__main__":
                     tempImage.save(f"UnrecognizedImages/Unrecognized_Image_{unrecognizedImageTotal}.jpg")
                     os.remove(fr"ImageTemp/{oldestFile}")
                     continue
-                    
+                
+                # Decide whether the rotated or original image has the better match
                 if bestOriginalMatch.ratio > bestRotatedMatch.ratio:
                     finalText = bestOriginalMatch.matchName
                 else:
                     finalText = bestRotatedMatch.matchName
 
                 print(f"\nGot card name match {finalText}")
+                # Increment the database entry for the final match
                 incrementValue(finalText)
+
+                # Remove processed image file
                 print(fr"Removing ImageTemp/{oldestFile}")
                 os.remove(fr"ImageTemp/{oldestFile}")
 
